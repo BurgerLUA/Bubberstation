@@ -23,7 +23,7 @@
 	/// How far can we spread?
 	var/spread_distance = 3 // Tiles
 	/// How likely are we to drop a shroom upon destruction?
-	var/drop_chance = 30
+	var/drop_chance = 8 // 2 out of 25 walls will bear fruit
 
 /datum/component/wall_fungus/Initialize(override_progression_step_amount, override_spread_chance, override_spread_distance, override_drop_chance)
 	if(!iswallturf(parent))
@@ -96,14 +96,24 @@
 /datum/component/wall_fungus/proc/spread_to_nearby_wall()
 	var/turf/closed/wall/parent_wall = parent
 	var/list/walls_to_pick_from = list()
-	for(var/turf/closed/wall/iterating_wall in RANGE_TURFS(3, parent_wall))
-		if(iterating_wall.GetComponent(/datum/component/wall_fungus))
+	for(var/d in GLOB.cardinals) //Get north, east, south, west.
+		var/turf/T = get_step(parent,d)
+		if(!iswallturf(T)) //Not even a wall.
+			continue
+		if(iterating_wall.GetComponent(/datum/component/wall_fungus)) //We exist already!
+			continue
+		var/wall_limit = 4
+		for(var/d2 in GLOB.cardinals)
+			var/turf/T2 = get_step(T,d2)
+			if(T2.density) //We are contained from this direction.
+				wall_limit -= 1
+		if(wall_limit <= 0) //Don't spread to intersections. If we're completely enclosed and unreachable, don't spread to it.
 			continue
 
 		walls_to_pick_from += iterating_wall
 
 	if(!length(walls_to_pick_from))
-		return // sad times
+		return // No walls found.
 
 	var/turf/closed/wall/picked_wall = pick(walls_to_pick_from)
 
