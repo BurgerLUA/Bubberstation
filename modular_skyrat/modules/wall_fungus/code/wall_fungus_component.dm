@@ -105,16 +105,17 @@
 		var/wall_limit = 4
 		for(var/d2 in GLOB.cardinals)
 			var/turf/T2 = get_step(T,d2)
-			var/datum/air_mixture = T2.return_air()
-			if(!air_mixture)
-				wall_limit = 0
-				break
-			var/pressure = air_mxiture.return_pressure()
-			if(pressure <= 50 || pressure >= 200)
-				wall_limit = 0
-				break
 			if(T2.density) //We are contained from this direction.
 				wall_limit -= 1
+			else //Open turf.
+				var/datum/air_mixture = T2.return_air()
+				if(!air_mixture)
+					wall_limit = 0
+					break
+				var/pressure = air_mxiture.return_pressure()
+				if(pressure <= 50 || pressure >= 200)
+					wall_limit = 0
+					break
 		if(wall_limit <= 0) //Don't spread to intersections. If we're completely enclosed and unreachable, don't spread to it.
 			continue
 
