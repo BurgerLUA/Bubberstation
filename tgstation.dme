@@ -7720,6 +7720,7 @@
 #include "modular_zubbers\code\_globalvars\lists\~maintenance_loot.dm"
 #include "modular_zubbers\code\datums\department_security.dm"
 #include "modular_zubbers\code\datums\ert.dm"
+#include "modular_zubbers\code\datums\outfit.dm"
 #include "modular_zubbers\code\datums\ai_laws\laws_antagonistic.dm"
 #include "modular_zubbers\code\datums\ai_laws\laws_neutral.dm"
 #include "modular_zubbers\code\datums\ai_laws\laws_station_sided.dm"
