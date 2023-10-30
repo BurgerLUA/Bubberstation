@@ -108,12 +108,12 @@
 		var/obj/item/storage/briefcase/empty/suitcase //Fuck you, it's a suitcase. It stores suits.
 		for(var/obj/item/equipped_item as anything in equipped_items)
 			if(!equipped_item)
-				to_chat(user,span_notice("NULL entry existed in equipped_items."))
+				to_chat(user,span_notice("[src.type]: NULL entry existed in equipped_items."))
 				continue
 			if(!equipped_item.loc)
-				to_chat(user,span_notice("[equipped_item.type] was in a NULL loc!"))
+				to_chat(user,span_notice("[src.type]: [equipped_item.type] was in a NULL loc!"))
 				continue
-			to_chat(user,span_notice("[equipped_item] is on [equipped_item.loc]"))
+			to_chat(user,span_notice("[src.type]: [equipped_item] is on [equipped_item.loc]"))
 			if(equipped_item.loc != user.loc) //All good in the hood.
 				continue
 			//On the ground! Pick that shit up!
@@ -170,7 +170,7 @@
 	if(!equipped_job)
 		equipped_job = SSjob.GetJob(equipped.job)
 
-	var/obj/item/card/id/card = locate(/obj/item/card/id) in equipped_items
+	var/obj/item/card/id/card = locate() in equipped_items
 
 	if(card)
 		ADD_TRAIT(card, TRAIT_JOB_FIRST_ID_CARD, ROUNDSTART_TRAIT)
@@ -190,7 +190,7 @@
 
 		equipped.sec_hud_set_ID()
 
-	var/obj/item/modular_computer/pda/pda = locate(/obj/item/modular_computer/pda) in equipped_items
+	var/obj/item/modular_computer/pda/pda = locate() in equipped_items
 
 	if(pda)
 		pda.imprint_id(equipped.real_name, equipped_job.title)
@@ -201,3 +201,72 @@
 
 		if(equipped_client)
 			pda.update_pda_prefs(equipped_client)
+
+
+/mob/living/carbon/human/equip_outfit_and_loadout(datum/outfit/outfit, datum/preferences/preference_source, visuals_only = FALSE, datum/job/equipping_job)
+
+	if (!preference_source)
+		equipOutfit(outfit, visuals_only) // no prefs for loadout items, but we should still equip the outfit.
+		return FALSE
+
+	var/datum/outfit/equipped_outfit
+
+	if(ispath(outfit))
+		equipped_outfit = new outfit()
+	else if(istype(outfit))
+		equipped_outfit = outfit
+	else
+		CRASH("Outfit passed to equip_outfit_and_loadout was neither a path nor an instantiated type!")
+
+	var/override_preference = preference_source.read_preference(/datum/preference/choiced/loadout_override_preference)
+
+	var/list/loadout_datums = loadout_list_to_datums(preference_source?.loadout_list)
+
+	if(override_preference == LOADOUT_OVERRIDE_CASE && !visuals_only) //Throw everything in a case.
+		var/obj/item/storage/briefcase/empty/briefcase = new(loc)
+
+		for(var/datum/loadout_item/item as anything in loadout_datums)
+			if(item.restricted_roles && equipping_job && !(equipping_job.title in item.restricted_roles))
+				if(client)
+					to_chat(src, span_warning("You were unable to get a loadout item([initial(item.item_path.name)]) due to job restrictions!"))
+				continue
+
+			if(item.restricted_species && !(dna.species.id in item.restricted_species))
+				if(client)
+					to_chat(src, span_warning("You were unable to get a loadout item ([initial(item.item_path.name)]) due to species restrictions!"))
+				continue
+
+			new item.item_path(briefcase)
+
+		briefcase.name = "[preference_source.read_preference(/datum/preference/name/real_name)]'s travel suitcase"
+		equipOutfit(equipped_outfit, visuals_only)
+		put_in_hands(briefcase)
+	else //Either replace it, or move to backpack.
+		for(var/datum/loadout_item/item as anything in loadout_datums)
+			if(item.restricted_roles && equipping_job && !(equipping_job.title in item.restricted_roles))
+				if(client)
+					to_chat(src, span_warning("You were unable to get a loadout item([initial(item.item_path.name)]) due to job restrictions!"))
+				continue
+
+			if(item.restricted_species && !(dna.species.id in item.restricted_species))
+				if(client)
+					to_chat(src, span_warning("You were unable to get a loadout item ([initial(item.item_path.name)]) due to species restrictions!"))
+				continue
+
+			// Make sure the item is not overriding an important for life outfit item
+			var/datum/outfit/outfit_important_for_life = dna.species.outfit_important_for_life
+			if(!outfit_important_for_life || !item.pre_equip_item(equipped_outfit, outfit_important_for_life, src, visuals_only))
+				item.insert_path_into_outfit(equipped_outfit, src, visuals_only, override_preference)
+
+
+		equipOutfit(equipped_outfit, visuals_only)
+
+	for(var/datum/loadout_item/item as anything in loadout_datums)
+		item.on_equip_item(preference_source, src, visuals_only)
+
+	if(preference_source?.read_preference(/datum/preference/toggle/green_pin))
+		var/obj/item/clothing/under/uniform = w_uniform
+		uniform?.attach_accessory(new /obj/item/clothing/accessory/green_pin(), src, FALSE)
+
+	regenerate_icons()
+	return TRUE
