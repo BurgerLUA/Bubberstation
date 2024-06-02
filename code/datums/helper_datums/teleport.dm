@@ -72,6 +72,7 @@
 
 	SEND_SIGNAL(teleatom, COMSIG_MOVABLE_TELEPORTED, destination, channel)
 	SEND_SIGNAL(destturf, COMSIG_ATOM_INTERCEPT_TELEPORTED, channel, curturf, destturf)
+	SEND_SIGNAL(curturf, COMSIG_ATOM_INTERCEPT_TELEPORTED, channel, curturf, destturf) //MODULAR ZUBBERS ADDITION
 
 	if(isobserver(teleatom))
 		teleatom.abstract_move(destturf)
