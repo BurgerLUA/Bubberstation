@@ -2,6 +2,8 @@
 	. = ..()
 	if(isliving(mover))
 		var/mob/living/mover_as_livng = mover
+		if(mover.throwing) //If you were thrown into the chasm, you're dicked.
+			return TRUE
 		if(mover_as_livng.stat != DEAD) //Only the living can stop themselves.
 			if(mover.loc == src) //If you fall on a chasm, you're dicked.
 				return TRUE
