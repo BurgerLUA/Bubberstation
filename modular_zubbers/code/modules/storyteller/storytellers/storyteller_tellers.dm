@@ -13,7 +13,6 @@
 		EVENT_TRACK_ROLESET = 0.7,
 		EVENT_TRACK_OBJECTIVES = 1
 		)
-	guarantees_roundstart_roleset = FALSE
 	tag_multipliers = list(TAG_COMBAT = 0.1, TAG_DESTRUCTIVE = 0.3)
 	antag_divisor = 32
 
