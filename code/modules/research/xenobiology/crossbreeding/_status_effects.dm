@@ -1074,6 +1074,7 @@
 	id = "stabilizedrainbow"
 	colour = SLIME_TYPE_RAINBOW
 
+/* BUBBERSTATION CHANGE: SEE MODULAR FILE.
 /datum/status_effect/stabilized/rainbow/tick(seconds_between_ticks)
 	if(owner.health <= 0)
 		var/obj/item/slimecross/stabilized/rainbow/X = linked_extract
@@ -1085,3 +1086,4 @@
 				qdel(src)
 				qdel(linked_extract)
 	return ..()
+BUBBERSTATION CHANGE END */
