@@ -9229,6 +9229,8 @@
 #include "modular_zubbers\code\modules\more_renaming\renaming_overrides.dm"
 #include "modular_zubbers\code\modules\movespeed\_movespeed_modifier.dm"
 #include "modular_zubbers\code\modules\movespeed\modifiers\status_effects.dm"
+#include "modular_zubbers\code\modules\new_loadout\generation.dm"
+#include "modular_zubbers\code\modules\new_loadout\categories\under.dm"
 #include "modular_zubbers\code\modules\nyamagotchi\nyamagotchi.dm"
 #include "modular_zubbers\code\modules\opposing_force\code\items.dm"
 #include "modular_zubbers\code\modules\opposing_force\code\equipment\antagonist_powers.dm"
