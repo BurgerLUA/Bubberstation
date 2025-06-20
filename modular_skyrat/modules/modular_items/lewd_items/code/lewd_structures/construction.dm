@@ -22,12 +22,12 @@
 
 /obj/item/construction_kit/click_ctrl_shift(mob/user)
 	if((item_flags & IN_INVENTORY) || (item_flags & IN_STORAGE))
-		return FALSE
+		return
 
 	to_chat(user, span_notice("You begin to assemble [src]..."))
 	if(!do_after(user, construction_time, src))
 		to_chat(user, span_warning("You fail to assemble [src]!"))
-		return FALSE
+		return
 
 	var/obj/structure/chair/final_structure = new resulting_structure (get_turf(user))
 	if(current_color && istype(final_structure, /obj/structure/chair/milking_machine))
@@ -45,7 +45,6 @@
 
 	qdel(src)
 	to_chat(user, span_notice("You assemble [src]."))
-	return TRUE
 
 // MILKER
 
@@ -88,7 +87,9 @@
 	resulting_structure = /obj/structure/bed/bdsm_bed
 
 /obj/item/construction_kit/bdsm/shibari
-	icon_state = "shibari_kit"
+	icon = 'icons/map_icons/items/_item.dmi'
+	icon_state = "/obj/item/construction_kit/bdsm/shibari"
+	post_init_icon_state = "shibari_kit"
 	greyscale_config = /datum/greyscale_config/shibari_stand_item
 	greyscale_colors = "#bd8fcf"
 	resulting_structure = /obj/structure/chair/shibari_stand

@@ -1,22 +1,26 @@
 /obj/item/storage/lunchbox
 	name = "lunchbox"
-	icon = 'modular_zubbers/code/modules/lunchbox/icons/lunchbox.dmi'
+	icon = 'modular_zubbers/icons/obj/storage/lunchbox.dmi'
 	icon_state = "lunchbox"
 	desc = "It's fucked, yell at coders."
 	inhand_icon_state = "lunchbox"
-	lefthand_file = 'modular_zubbers/code/modules/lunchbox/icons/lunchbox_lefthand.dmi'
-	righthand_file = 'modular_zubbers/code/modules/lunchbox/icons/lunchbox_righthand.dmi'
-	drop_sound = 'sound/items/handling/cardboardbox_drop.ogg'
-	pickup_sound =  'sound/items/handling/cardboardbox_pickup.ogg'
+	lefthand_file = 'modular_zubbers/icons/mob/inhands/equipment/lunchbox_lefthand.dmi'
+	righthand_file = 'modular_zubbers/icons/mob/inhands/equipment/lunchbox_righthand.dmi'
+	drop_sound = 'sound/items/handling/cardboard_box/cardboardbox_drop.ogg'
+	pickup_sound =  'sound/items/handling/cardboard_box/cardboardbox_pickup.ogg'
 	throw_speed = 3
 	throw_range = 7
 
 /obj/item/storage/lunchbox/Initialize(mapload)
 	. = ..()
-	atom_storage.max_slots = 4
+	atom_storage.max_slots = 8
 	atom_storage.set_holdable(list(
 		/obj/item/food,
 		/obj/item/reagent_containers/cup,
+		/obj/item/reagent_containers/condiment,
+		/obj/item/storage/box/gum,
+		/obj/item/storage/fancy/cigarettes,
+		/obj/item/lighter,
 		))
 
 /obj/item/storage/lunchbox/nanotrasen

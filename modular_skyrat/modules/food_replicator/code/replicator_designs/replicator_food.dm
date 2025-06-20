@@ -44,7 +44,7 @@
 
 ///Despite being in the medical.dm file, it's still used to fill your hunger up, as such, technically, is food.
 /datum/design/glucose
-	name = "EVA Glucose Injector"
+	name = "Glucose Injector"
 	id = "slavic_glupen"
 	build_type = BIOGENERATOR
 	materials = list(/datum/material/biomass = 150)
@@ -111,10 +111,10 @@
 
 /datum/design/cocoa
 	name = "Powdered Hot Chocolate"
-	id = "slavic_coco"
+	id = "cocoa"
 	build_type = BIOGENERATOR
 	materials = list(/datum/material/biomass = 4)
-	make_reagent = /datum/reagent/consumable/powdered_coco
+	make_reagent = /datum/reagent/consumable/coco
 	category = list(
 		RND_CATEGORY_INITIAL,
 		RND_CATEGORY_NRI_FOOD,

@@ -12,7 +12,7 @@
 		balloon_alert_to_viewers("cooldown has completed")
 		return
 	//BUBBER ADDITION END
-	radio.talk_into(src, "Thermal systems within operational parameters. Proceeding to domain configuration.", RADIO_CHANNEL_SUPPLY)
+	aas_config_announce(/datum/aas_config_entry/bitrunning_QS_ready_announcement, list(), src, list(RADIO_CHANNEL_SUPPLY))
 
 
 /// If there are hosted minds, attempts to get a list of their current virtual bodies w/ vitals
@@ -141,7 +141,7 @@
 
 /// Do some magic teleport sparks
 /obj/machinery/quantum_server/proc/spark_at_location(obj/cache)
-	playsound(cache, 'sound/magic/blink.ogg', 50, vary = TRUE)
+	playsound(cache, 'sound/effects/magic/blink.ogg', 50, vary = TRUE)
 	var/datum/effect_system/spark_spread/quantum/sparks = new()
 	sparks.set_up(5, location = get_turf(cache))
 	sparks.start()

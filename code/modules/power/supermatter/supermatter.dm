@@ -1,3 +1,5 @@
+#define SUPERMATTER_SUPPRESSION_THRESHOLD 98.4 // BUBBER EDIT ADDITION - DELAM_SCRAM
+
 //Ported from /vg/station13, which was in turn forked from baystation12;
 //Please do not bother them with bugs from this port, however, as it has been modified quite a bit.
 //Modifications include removing the world-ending full supermatter variation, and leaving only the shard.
@@ -78,6 +80,8 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	var/explosion_point = 100
 	///Are we exploding?
 	var/final_countdown = FALSE
+	///Have we fired delam suppression?
+	var/suppression_fired = FALSE // BUBBER EDIT ADDITION - DELAM_SCRAM
 	///A scaling value that affects the severity of explosions.
 	var/explosion_power = 35
 	///Time in 1/10th of seconds since the last sent warning
@@ -153,10 +157,12 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 
 	///Stores the time of when the last zap occurred
 	var/last_power_zap = 0
-	///Stores the tick of the machines subsystem of when the last zap occurred. Gives a passage of time in the perspective of SSmachines.
-	var/last_power_zap_perspective_machines = 0
-	///Same as [last_power_zap_perspective_machines], but based around the high energy zaps found in handle_high_power().
-	var/last_high_energy_zap_perspective_machines = 0
+	///Stores the tick of the machines subsystem of when the last zap energy accumulation occurred. Gives a passage of time in the perspective of SSmachines.
+	var/last_energy_accumulation_perspective_machines = 0
+	///Same as [last_energy_accumulation_perspective_machines], but based around the high energy zaps found in handle_high_power().
+	var/last_high_energy_accumulation_perspective_machines = 0
+	/// Accumulated energy to be transferred from supermatter zaps.
+	var/list/zap_energy_accumulation = list()
 	///Do we show this crystal in the CIMS modular program
 	var/include_in_cims = TRUE
 
@@ -220,6 +226,19 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	soundloop = new(src, TRUE)
 
 	if(!isnull(check_holidays(FESTIVE_SEASON)))
+		// BUBBER EDIT EDITION BEGIN - Festive Supermatter
+		switch(rand(1, 3))
+			if(1)
+				icon = 'modular_zubbers/icons/obj/machines/festive_supermatter.dmi'
+				name = "festive supermatter crystal"
+				desc = "A strangely translucent and festive crystal. If you stare at it long enough, some say you can hallucinate the distilled essence of the holidays staring back at you."
+			if(2)
+				icon = 'modular_zubbers/icons/obj/machines/wintergreen_supermatter.dmi'
+				name = "wintergreen supermatter crystal"
+				desc = "A strangely translucent and iridescent crystal. Green doesn't make it run cooler."
+			if(3)
+				icon = 'icons/obj/machines/engine/supermatter.dmi'
+		// BUBBER EDIT ADDITION END
 		holiday_lights()
 
 	if (!moveable)
@@ -239,7 +258,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	QDEL_NULL(radio)
 	QDEL_NULL(countdown)
 	if(is_main_engine && GLOB.main_supermatter_engine == src)
-		SSpersistence.reset_delam_counter() // NOVA EDIT ADDITION BEGIN - DELAM SCRAM
+		SSpersistence.delam_counter_penalty() // SKYRAT EDIT ADDITION BEGIN - DELAM SCRAM
 		GLOB.main_supermatter_engine = null
 	QDEL_NULL(soundloop)
 	return ..()
@@ -298,22 +317,25 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	// PART 3: POWER PROCESSING
 	internal_energy_factors = calculate_internal_energy()
 	zap_factors = calculate_zap_transmission_rate()
-	var/delta_time = (SSmachines.times_fired - last_power_zap_perspective_machines) * SSmachines.wait / (1 SECONDS)
-	if(delta_time && internal_energy && (last_power_zap + (4 - internal_energy * 0.001) SECONDS) < world.time)
-		playsound(src, 'sound/weapons/emitter2.ogg', 70, TRUE)
+	var/delta_time = (SSmachines.times_fired - last_energy_accumulation_perspective_machines) * SSmachines.wait / (1 SECONDS)
+	var/accumulated_energy = accumulate_energy(ZAP_ENERGY_ACCUMULATION_NORMAL, energy = internal_energy * zap_transmission_rate * delta_time)
+	if(accumulated_energy && (last_power_zap + (4 - internal_energy * 0.001) SECONDS) < world.time)
+		var/discharged_energy = discharge_energy(ZAP_ENERGY_ACCUMULATION_NORMAL)
+		playsound(src, 'sound/items/weapons/emitter2.ogg', 70, TRUE)
 		hue_angle_shift = clamp(903 * log(10, (internal_energy + 8000)) - 3590, -50, 240)
 		var/zap_color = color_matrix_rotate_hue(hue_angle_shift)
 		supermatter_zap(
 			zapstart = src,
 			range = 3,
-			zap_str = internal_energy * zap_transmission_rate * delta_time,
+			zap_str = discharged_energy,
 			zap_flags = ZAP_SUPERMATTER_FLAGS,
-			zap_cutoff = 240 KILO WATTS * delta_time,
+			zap_cutoff = 240 KILO JOULES,
 			power_level = internal_energy,
 			color = zap_color,
 		)
+
 		last_power_zap = world.time
-		last_power_zap_perspective_machines = SSmachines.times_fired
+	last_energy_accumulation_perspective_machines = SSmachines.times_fired
 
 	// PART 4: DAMAGE PROCESSING
 	temp_limit_factors = calculate_temp_limit()
@@ -321,9 +343,16 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	damage_factors = calculate_damage()
 	if(damage == 0) // Clear any in game forced delams if on full health.
 		set_delam(SM_DELAM_PRIO_IN_GAME, SM_DELAM_STRATEGY_PURGE)
+		station_notified = FALSE // BUBBER EDIT ADDITION - DELAM_SCRAM
 	else if(!final_countdown)
 		set_delam(SM_DELAM_PRIO_NONE, SM_DELAM_STRATEGY_PURGE) // This one cant clear any forced delams.
 	delamination_strategy.delam_progress(src)
+	// BUBBER EDIT ADDITION BEGIN - DELAM_SCRAM
+	if(damage > SUPERMATTER_SUPPRESSION_THRESHOLD && is_main_engine && !suppression_fired)
+		investigate_log("Integrity at time of suppression signal was [100 - damage]", INVESTIGATE_ENGINE)
+		SEND_GLOBAL_SIGNAL(COMSIG_MAIN_SM_DELAMINATING, SCRAM_AUTO_FIRE)
+		suppression_fired = TRUE
+	// BUBBER EDIT ADDITION END
 	if(damage > explosion_point && !final_countdown)
 		count_down()
 
@@ -561,7 +590,8 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 
 	final_countdown = TRUE
 
-	SEND_GLOBAL_SIGNAL(COMSIG_MAIN_SM_DELAMINATING, final_countdown) // SKYRAT EDIT ADDITION - DELAM_SCRAM
+	INVOKE_ASYNC(src, PROC_REF(final_announcement)) // BUBBER EDIT ADDITION - DELAM SOUNDS
+
 	notify_ghosts(
 		"[src] has begun the delamination process!",
 		source = src,
@@ -618,7 +648,10 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 				if(isanimal_or_basicmob(lucky_engi))
 					continue
 				LAZYADD(saviors, WEAKREF(lucky_engi))
-
+			// BUBBER EDIT ADDITION BEGIN - DELAM_SCRAM
+			for(var/mob/player as anything in GLOB.player_list)
+				SEND_SOUND(player, sound(null)) // stop our long ass delam sound
+			// BUBBER EDIT ADDITION END
 			return // delam averted
 		sleep(1 SECONDS)
 
@@ -718,7 +751,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 		activation_logged = TRUE // so we dont spam the log.
 	else if(!internal_energy)
 		last_power_zap = world.time
-		last_power_zap_perspective_machines = SSmachines.times_fired
+		last_energy_accumulation_perspective_machines = SSmachines.times_fired
 	return additive_power
 
 /** Log when the supermatter is activated for the first time.
@@ -867,7 +900,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
  * Set to a number higher than [SM_DELAM_PRIO_IN_GAME] to fully force an admin delam.
  * * delam_path: Typepath of a [/datum/sm_delam]. [SM_DELAM_STRATEGY_PURGE] means reset and put prio back to zero.
  *
- * Returns: Not used for anything, just returns true on succesful set, manual and automatic. Helps admins check stuffs.
+ * Returns: Not used for anything, just returns true on successful set, manual and automatic. Helps admins check stuffs.
  */
 /obj/machinery/power/supermatter_crystal/proc/set_delam(priority = SM_DELAM_PRIO_NONE, manual_delam_path = SM_DELAM_STRATEGY_PURGE)
 	if(priority < delam_priority)
@@ -895,8 +928,35 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	delamination_strategy.on_select(src)
 	return TRUE
 
+/**
+ * Accumulates energy for the zap_energy_accumulation key.
+ * Args:
+ * * key: The zap energy accumulation key to use.
+ * * energy: The amount of energy to accumulate.
+ * Returns: The accumulated energy for that key.
+ */
+/obj/machinery/power/supermatter_crystal/proc/accumulate_energy(key, energy)
+	. = (zap_energy_accumulation[key] ? zap_energy_accumulation[key] : 0) + energy
+	zap_energy_accumulation[key] = .
+
+/**
+ * Depletes a portion of the accumulated energy for the given key and returns it. Used for discharging energy from the supermatter.
+ * Args:
+ * * key: The zap energy accumulation key to use.
+ * * portion: The portion of the accumulated energy that gets discharged.
+ * Returns: The discharged energy for that key.
+ */
+/obj/machinery/power/supermatter_crystal/proc/discharge_energy(key, portion = ZAP_ENERGY_DISCHARGE_PORTION)
+	. = portion * zap_energy_accumulation[key]
+	zap_energy_accumulation[key] -= .
+
 /obj/machinery/proc/supermatter_zap(atom/zapstart = src, range = 5, zap_str = 3.2 MEGA JOULES, zap_flags = ZAP_SUPERMATTER_FLAGS, list/targets_hit = list(), zap_cutoff = 1.2 MEGA JOULES, power_level = 0, zap_icon = DEFAULT_ZAP_ICON_STATE, color = null)
 	if(QDELETED(zapstart))
+		return
+	if(zap_cutoff <= 0)
+		stack_trace("/obj/machinery/supermatter_zap() was called with a non-positive value")
+		return
+	if(zap_str <= 0) // Just in case something scales zap_str and zap_cutoff to 0.
 		return
 	. = zapstart.dir
 	//If the strength of the zap decays past the cutoff, we stop
@@ -1020,8 +1080,12 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	//This gotdamn variable is a boomer and keeps giving me problems
 	var/turf/target_turf = get_turf(target)
 	var/pressure = 1
+	// Calculate pressure and do electrolysis.
 	if(target_turf?.return_air())
-		pressure = max(1,target_turf.return_air().return_pressure())
+		var/datum/gas_mixture/air_mixture = target_turf.return_air()
+		pressure = max(1, air_mixture.return_pressure())
+		air_mixture.electrolyze(working_power = zap_str / 200, electrolyzer_args = list(ELECTROLYSIS_ARGUMENT_SUPERMATTER_POWER = power_level))
+		target_turf.air_update_turf()
 	//We get our range with the strength of the zap and the pressure, the higher the former and the lower the latter the better
 	var/new_range = clamp(zap_str / pressure * 10, 2, 7)
 	var/zap_count = 1
@@ -1050,7 +1114,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 /// Consume the santa hat and add it as an overlay
 /obj/machinery/power/supermatter_crystal/proc/holiday_item_interaction(source, mob/living/user, obj/item/item, list/modifiers)
 	SIGNAL_HANDLER
-	if(istype(item, /obj/item/clothing/head/costume/santa) || istype(item, /obj/item/clothing/head/costume/skyrat/christmas)) // SKYRAT EDIT CHANGE - Loadouts
+	if(istype(item, /obj/item/clothing/head/costume/santa))
 		QDEL_NULL(item)
 		RegisterSignal(src, COMSIG_ATOM_EXAMINE, PROC_REF(holiday_hat_examine))
 		if(istype(src, /obj/machinery/power/supermatter_crystal/shard))
@@ -1072,3 +1136,5 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 #undef MACHINERY
 #undef OBJECT
 #undef LOWEST
+
+#undef SUPERMATTER_SUPPRESSION_THRESHOLD // BUBBER EDIT ADDITION - DELAM_SCRAM

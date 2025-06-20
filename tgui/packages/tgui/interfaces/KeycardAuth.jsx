@@ -1,5 +1,6 @@
+import { Box, Button, Section } from 'tgui-core/components';
+
 import { useBackend } from '../backend';
-import { Box, Button, Section } from '../components';
 import { Window } from '../layouts';
 
 export const KeycardAuth = (props) => {
@@ -39,7 +40,7 @@ export const KeycardAuth = (props) => {
                       content="Red Alert"
                     />
                     <Button
-                      icon="id-card-o"
+                      icon="wrench"
                       fluid
                       onClick={() => act('emergency_maint')}
                       content="Emergency Maintenance Access"

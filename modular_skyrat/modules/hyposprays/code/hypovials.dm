@@ -7,6 +7,7 @@
 	fill_icon_state = "hypovial_fill"
 	spillable = FALSE
 	volume = 10
+	amount_per_transfer_from_this = 5
 	possible_transfer_amounts = list(1,2,5,10)
 	fill_icon_thresholds = list(10, 25, 50, 75, 100)
 	var/chem_color = "#FFFFFF" //Used for hypospray overlay
@@ -25,6 +26,8 @@
 		"Buff" = "hypovial-buff",
 		"Custom" = "hypovial-custom",
 	)
+	/// The original icon file where our overlays reside.
+	var/original_icon = 'modular_skyrat/modules/hyposprays/icons/vials.dmi'
 
 /obj/item/reagent_containers/cup/vial/Initialize(mapload)
 	. = ..()
@@ -41,7 +44,7 @@
 /obj/item/reagent_containers/cup/vial/click_ctrl_shift(mob/user, obj/item/I)
 	current_skin = null
 	icon_state = initial(icon_state)
-	icon = initial(icon)
+	icon = original_icon
 	greyscale_colors = null
 	reskin_obj(user)
 

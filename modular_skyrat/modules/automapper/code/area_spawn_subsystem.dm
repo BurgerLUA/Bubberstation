@@ -1,6 +1,9 @@
 SUBSYSTEM_DEF(area_spawn)
 	name = "Area Spawn"
 	flags = SS_NO_FIRE
+	dependencies = list(
+		/datum/controller/subsystem/mapping
+	)
 
 	// Can't be on tile or a neighbor.
 	// Usually things where it's important to be sure the players can walk up to them, but aren't dense.
@@ -263,7 +266,7 @@ SUBSYSTEM_DEF(area_spawn)
 	/// See code/__DEFINES/~skyrat_defines/automapper.dm
 	var/mode = AREA_SPAWN_MODE_OPEN
 	/// Map blacklist, this is used to determine what maps we should not spawn on.
-	var/list/blacklisted_stations = list("Void Raptor", "Runtime Station", "MultiZ Debug", "Gateway Test", "Blueshift")
+	var/list/blacklisted_stations = list("Void Raptor", "Runtime Station", "MultiZ Debug", "Gateway Test", "Blueshift", "Biodome", "Moon Station", "Box Station")
 	/// If failing to find a suitable area is OK, then this should be TRUE or CI will fail.
 	/// Should probably be true if the target_areas are random, such as ruins.
 	var/optional = FALSE
@@ -272,7 +275,7 @@ SUBSYSTEM_DEF(area_spawn)
  * Attempts to find a location using an algorithm to spawn the desired atom.
  */
 /datum/area_spawn/proc/try_spawn()
-	if(SSmapping.config.map_name in blacklisted_stations)
+	if(SSmapping.current_map.map_name in blacklisted_stations)
 		return
 
 	// Turfs that are available
@@ -288,7 +291,7 @@ SUBSYSTEM_DEF(area_spawn)
 
 	if(!LAZYLEN(available_turfs))
 		if(!optional)
-			log_mapping("[src.type] could not find any suitable turfs on map [SSmapping.config.map_name]!")
+			log_mapping("[src.type] could not find any suitable turfs on map [SSmapping.current_map.map_name]!")
 			SSarea_spawn.failed_area_spawns += src.type
 		return
 
@@ -320,13 +323,13 @@ SUBSYSTEM_DEF(area_spawn)
 	/// The atom type that we want to spawn
 	var/desired_atom
 	/// Map blacklist, this is used to determine what maps we should not spawn on.
-	var/list/blacklisted_stations = list("Void Raptor", "Runtime Station", "MultiZ Debug", "Gateway Test")
+	var/list/blacklisted_stations = list("Void Raptor", "Runtime Station", "MultiZ Debug", "Gateway Test", "Moon Station", "Box Station")
 
 /**
  * Spawn the atoms.
  */
 /datum/area_spawn_over/proc/try_spawn()
-	if(SSmapping.config.map_name in blacklisted_stations)
+	if(SSmapping.current_map.map_name in blacklisted_stations)
 		return
 
 	for(var/area_type in target_areas)

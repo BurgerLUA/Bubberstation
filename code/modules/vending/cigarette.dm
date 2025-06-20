@@ -18,6 +18,8 @@
 	)
 	contraband = list(
 		/obj/item/vape = 5,
+		/obj/item/cigarette/dart = 1,
+		/obj/item/storage/fancy/cigarettes/cigpack_greytide = 1,
 	)
 	premium = list(
 		/obj/item/storage/fancy/cigarettes/cigpack_robustgold = 3,
@@ -42,6 +44,7 @@
 		/obj/item/storage/fancy/cigarettes/cigpack_robust = 2,
 		/obj/item/storage/fancy/cigarettes/cigpack_carp = 3,
 		/obj/item/storage/fancy/cigarettes/cigpack_midori = 1,
+		/obj/item/storage/fancy/cigarettes/cigpack_greytide = 1,
 		/obj/item/storage/box/matches = 10,
 		/obj/item/lighter/greyscale = 4,
 		/obj/item/storage/fancy/rollingpapers = 5,
@@ -75,7 +78,7 @@
 	machine_name = "ShadyCigs Deluxe"
 	icon_state = "refill_smoke"
 
-/obj/machinery/vending/cigarette/pre_throw(obj/item/I)
-	if(istype(I, /obj/item/lighter))
-		var/obj/item/lighter/L = I
-		L.set_lit(TRUE)
+/obj/machinery/vending/cigarette/pre_throw(obj/item/thrown_item)
+	if(istype(thrown_item, /obj/item/lighter))
+		var/obj/item/lighter/thrown_lighter = thrown_item
+		thrown_lighter.set_lit(TRUE)

@@ -42,6 +42,7 @@
 		return
 
 	INVOKE_ASYNC(src, PROC_REF(repack), source, user)
+	return COMPONENT_CANCEL_ATTACK_CHAIN
 
 /// Removes the element target and spawns a new one of whatever item_to_pack_into is
 /datum/element/repackable/proc/repack(atom/source, mob/user)
@@ -49,7 +50,7 @@
 	if(!do_after(user, 3 SECONDS, target = source))
 		return
 
-	playsound(source, 'sound/items/ratchet.ogg', 50, TRUE)
+	playsound(source, 'sound/items/tools/ratchet.ogg', 50, TRUE)
 
 	new item_to_pack_into(source.drop_location())
 

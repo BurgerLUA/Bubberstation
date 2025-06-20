@@ -2,10 +2,11 @@
 /obj/item/clothing/mask/ballgag
 	name = "ball gag"
 	desc = "Prevents the wearer from speaking."
-	icon_state = "ballgag"
+	icon = 'icons/map_icons/clothing/mask.dmi'
+	icon_state = "/obj/item/clothing/mask/ballgag"
+	post_init_icon_state = "ballgag"
 	inhand_icon_state = "ballgag"
 	worn_icon_state = "ballgag"
-	icon = 'modular_skyrat/modules/modular_items/lewd_items/icons/obj/lewd_clothing/lewd_masks.dmi'
 	worn_icon = 'modular_skyrat/modules/modular_items/lewd_items/icons/mob/lewd_clothing/lewd_masks.dmi'
 	worn_icon_muzzled = 'modular_skyrat/master_files/icons/mob/clothing/mask_muzzled.dmi'
 	lefthand_file = 'modular_skyrat/modules/modular_items/lewd_items/icons/mob/lewd_inhands/lewd_inhand_left.dmi'
@@ -75,7 +76,7 @@
 		return
 	speech_args[SPEECH_MESSAGE] = pick((prob(moans_alt_probability) && LAZYLEN(moans_alt)) ? moans_alt : moans)
 	if(moan_sounds)
-		play_lewd_sound(loc, pick(moan_sounds), chokes_wearer ? moan_volume_choking : moan_volume, 1, -1)
+		conditional_pref_sound(loc, pick(moan_sounds), chokes_wearer ? moan_volume_choking : moan_volume, 1, -1)
 
 // Change the size of the gag
 /obj/item/clothing/mask/ballgag/attack_self(mob/user)
@@ -90,7 +91,8 @@
 /obj/item/clothing/mask/ballgag/choking
 	name = "phallic ball gag"
 	desc = "Prevents the wearer from speaking, as well as making breathing harder."
-	icon_state = "chokegag"
+	icon_state = "/obj/item/clothing/mask/ballgag/choking"
+	post_init_icon_state = "chokegag"
 	moan_volume = 40
 	resizable = TRUE
 	greyscale_config = /datum/greyscale_config/ballgag/choking_small

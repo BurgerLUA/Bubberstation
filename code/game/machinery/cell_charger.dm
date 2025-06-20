@@ -7,7 +7,7 @@
 	circuit = /obj/item/circuitboard/machine/cell_charger
 	pass_flags = PASSTABLE
 	var/obj/item/stock_parts/power_store/cell/charging = null
-	var/charge_rate = STANDARD_CELL_RATE //SKYRAT EDIT CHANGE - ORIGINAL: 0.25 * STANDARD_CELL_RATE
+	var/charge_rate = 0.5 * STANDARD_CELL_RATE //SKYRAT EDIT CHANGE - ORIGINAL: 0.25 * STANDARD_CELL_RATE
 
 /* OVERWRITTEN IN modular_skyrat\modules\aesthetics\cells\cell.dm
 /obj/machinery/cell_charger/update_overlays()
@@ -43,7 +43,7 @@
 		update_appearance()
 	return ITEM_INTERACT_SUCCESS
 
-/obj/machinery/cell_charger/attackby(obj/item/W, mob/user, params)
+/obj/machinery/cell_charger/attackby(obj/item/W, mob/user, list/modifiers, list/attack_modifiers)
 	if(istype(W, /obj/item/stock_parts/power_store/cell) && !panel_open)
 		if(machine_stat & BROKEN)
 			to_chat(user, span_warning("[src] is broken!"))
@@ -133,7 +133,7 @@
 
 /obj/machinery/cell_charger/RefreshParts()
 	. = ..()
-	charge_rate = STANDARD_CELL_RATE //SKYRAT EDIT CHANGE - ORIGINAL: 0.25 * STANDARD_CELL_RATE
+	charge_rate = 0.5 * STANDARD_CELL_RATE //SKYRAT EDIT CHANGE - ORIGINAL: 0.25 * STANDARD_CELL_RATE
 	for(var/datum/stock_part/capacitor/capacitor in component_parts)
 		charge_rate *= capacitor.tier
 

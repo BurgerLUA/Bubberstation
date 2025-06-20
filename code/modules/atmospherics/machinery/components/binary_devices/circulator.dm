@@ -61,7 +61,7 @@ Skyrat removal START, moved to modular file
 	return removed
 
 /obj/machinery/atmospherics/components/binary/circulator/process_atmos()
-	update_appearance()
+	update_appearance(UPDATE_ICON)
 
 /obj/machinery/atmospherics/components/binary/circulator/update_overlays()
 	. = ..()
@@ -170,13 +170,14 @@ Skyrat removal START, moved to modular file
 		generator.cold_circ = null
 	else
 		generator.hot_circ = null
-	generator.update_appearance()
+	generator.update_appearance(UPDATE_ICON)
 	generator = null
 
 /obj/machinery/atmospherics/components/binary/circulator/set_piping_layer(new_layer)
 	..()
 	pixel_x = 0
 	pixel_y = 0
+
 
 Skyrat removal END
 */

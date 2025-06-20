@@ -1,4 +1,4 @@
-import { BooleanLike } from 'common/react';
+import { BooleanLike } from 'tgui-core/react';
 
 export type NtMessage = {
   message: string;
@@ -6,6 +6,7 @@ export type NtMessage = {
   photo_path?: string;
   everyone: BooleanLike;
   timestamp: string;
+  subtle: BooleanLike; // BUBBER EDIT ADDITION - SUBTLE MESSAGES
 };
 
 export type NtPicture = {

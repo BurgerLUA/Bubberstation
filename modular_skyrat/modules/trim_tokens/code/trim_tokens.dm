@@ -5,7 +5,7 @@
 	icon_state = "coin_valid"
 	w_class = WEIGHT_CLASS_SMALL
 	resistance_flags = INDESTRUCTIBLE
-	usesound = 'sound/weapons/taserhit.ogg'
+	usesound = 'sound/items/weapons/taserhit.ogg'
 	// Name of the job of that trim. I tried to do it otherwise but it was annoying so this is how it's going to be.
 	var/assignment = "Unassigned"
 	// Trim to add to the ID.
@@ -19,7 +19,7 @@
 	var/has_required_trim = FALSE
 	// Do we force the access update? TRUE by default.
 	var/force_access = TRUE
-	// Does it have multiple uses? 1 by default, set to INFINITE (so -1, not any lower) to not have it be consumed.
+	// Does it have multiple uses? 1 by default, set to -1 to not have it be consumed.
 	var/uses = 1
 
 /obj/item/trim_token/Initialize(mapload)

@@ -40,14 +40,13 @@
 		SEND_SIGNAL(src, COMSIG_MOB_EMOTE, emote, act, m_type, message, intentional)
 		SEND_SIGNAL(src, COMSIG_MOB_EMOTED(emote.key))
 		return TRUE
-		src.nextsoundemote = world.time // SKYRAT EDIT ADDITION
 	if(intentional && !silenced && !force_silence)
 		to_chat(src, span_notice("Unusable emote '[act]'. Say *help for a list."))
 	return FALSE
 
 /datum/emote/help
 	key = "help"
-	mob_type_ignore_stat_typecache = list(/mob/dead/observer, /mob/living/silicon/ai, /mob/camera/imaginary_friend)
+	mob_type_ignore_stat_typecache = list(/mob/dead/observer, /mob/living/silicon/ai, /mob/eye/imaginary_friend)
 
 /datum/emote/help/run_emote(mob/user, params, type_override, intentional)
 	. = ..()
@@ -73,26 +72,30 @@
 	message += keys.Join(", ")
 	message += "."
 	message = message.Join("")
-	to_chat(user, examine_block(message))
+	to_chat(user, boxed_message(message))
 
 /datum/emote/flip
 	key = "flip"
 	key_third_person = "flips"
 	hands_use_check = TRUE
-	mob_type_allowed_typecache = list(/mob/living, /mob/dead/observer, /mob/camera/imaginary_friend)
-	mob_type_ignore_stat_typecache = list(/mob/dead/observer, /mob/living/silicon/ai, /mob/camera/imaginary_friend)
+	mob_type_allowed_typecache = list(/mob/living, /mob/dead/observer, /mob/eye/imaginary_friend)
+	mob_type_ignore_stat_typecache = list(/mob/dead/observer, /mob/living/silicon/ai, /mob/eye/imaginary_friend)
 
+// BUBBER EDIT CHANGE BEGIN - Flip Cooldown
 /datum/emote/flip/run_emote(mob/user, params , type_override, intentional)
 	. = ..()
-	user.SpinAnimation(HAS_TRAIT(user, TRAIT_SLOW_FLIP) ? FLIP_EMOTE_DURATION * 2 : FLIP_EMOTE_DURATION, 1)
+	if(iscarbon(user))
+		var/mob/living/carbon/flippy_mcgee = user
+		flippy_mcgee.set_confusion_if_lower(FLIP_EMOTE_DURATION)
+		if(flippy_mcgee.get_timed_status_effect_duration(/datum/status_effect/confusion) > BEYBLADE_PUKE_THRESHOLD)
+			flippy_mcgee.vomit(VOMIT_CATEGORY_KNOCKDOWN, lost_nutrition = BEYBLADE_PUKE_NUTRIENT_LOSS, distance = 0)
+			return
 
+	user.SpinAnimation(FLIP_EMOTE_DURATION, 1)
+
+/*
 /datum/emote/flip/check_cooldown(mob/user, intentional)
-	var/slow_flipper = HAS_TRAIT(user, TRAIT_SLOW_FLIP)
-	if(slow_flipper)
-		cooldown *= 2
 	. = ..()
-	if(slow_flipper)
-		cooldown *= 0.5
 	if(.)
 		return
 	if(!can_run_emote(user, intentional=intentional))
@@ -112,13 +115,37 @@
 				span_notice("[flippy_mcgee] stumbles a bit after their flip."),
 				span_notice("You stumble a bit from still being off balance from your last flip.")
 			)
+*/
+/datum/emote/flip/check_cooldown(mob/living/carbon/user, intentional)
+	. = ..()
+	if(.)
+		return
+	if(!can_run_emote(user, intentional=intentional))
+		return
+	if(!iscarbon(user))
+		return
+
+	var/mob/living/flippy_mcgee = user
+	var/sickness = flippy_mcgee.get_timed_status_effect_duration(/datum/status_effect/confusion)
+	if(sickness && !(HAS_TRAIT(flippy_mcgee, TRAIT_FREERUNNING)))
+		if(prob(20))
+			flippy_mcgee.Knockdown(1.5 SECONDS)
+			flippy_mcgee.visible_message(
+				span_notice("[flippy_mcgee] attempts to do a flip and falls over, what a doofus!"),
+				span_notice("You attempt to do a flip while still off balance from the last flip and fall down!")
+			)
+		user.set_dizzy_if_lower(BEYBLADE_DIZZINESS_DURATION)
+		user.adjust_confusion_up_to(BEYBLADE_CONFUSION_INCREMENT, BEYBLADE_CONFUSION_LIMIT)
+		if(sickness > (BEYBLADE_PUKE_THRESHOLD * 0.5))
+			to_chat(user, span_warning("You feel woozy from flipping."))
+// BUBBER EDIT CHANGE END
 
 /datum/emote/spin
 	key = "spin"
 	key_third_person = "spins"
 	hands_use_check = TRUE
-	mob_type_allowed_typecache = list(/mob/living, /mob/dead/observer, /mob/camera/imaginary_friend)
-	mob_type_ignore_stat_typecache = list(/mob/dead/observer, /mob/camera/imaginary_friend)
+	mob_type_allowed_typecache = list(/mob/living, /mob/dead/observer, /mob/eye/imaginary_friend)
+	mob_type_ignore_stat_typecache = list(/mob/dead/observer, /mob/eye/imaginary_friend)
 
 /datum/emote/spin/run_emote(mob/user, params,  type_override, intentional)
 	. = ..()
@@ -132,6 +159,10 @@
 		return
 	if(!iscarbon(user))
 		return
+	// BUBBER EDIT ADDITION BEGIN - Freerunning Quirk
+	if(HAS_TRAIT(user, TRAIT_FREERUNNING))
+		return
+	// BUBBER EDIT ADDITION END
 
 	if(user.get_timed_status_effect_duration(/datum/status_effect/confusion) > BEYBLADE_PUKE_THRESHOLD)
 		user.vomit(VOMIT_CATEGORY_KNOCKDOWN, lost_nutrition = BEYBLADE_PUKE_NUTRIENT_LOSS, distance = 0)
@@ -148,3 +179,36 @@
 #undef BEYBLADE_DIZZINESS_DURATION
 #undef BEYBLADE_CONFUSION_INCREMENT
 #undef BEYBLADE_CONFUSION_LIMIT
+
+
+/datum/emote/jump
+	key = "jump"
+	key_third_person = "jumps"
+	message = "jumps!"
+	// Allows ghosts to jump
+	mob_type_ignore_stat_typecache = list(/mob/dead/observer)
+	affected_by_pitch = FALSE
+
+/datum/emote/jump/run_emote(mob/user, params, type_override, intentional)
+	. = ..()
+
+	jump_animation(user)
+
+	if(!isliving(user))
+		return
+	for(var/obj/item/storage/box/squeeze_box in get_turf(user))
+		squeeze_box.flatten_box()
+
+/datum/emote/jump/proc/jump_animation(mob/user)
+	var/original_transform = user.transform
+	animate(user, transform = user.transform.Translate(0, 4), time = 0.1 SECONDS, flags = ANIMATION_PARALLEL)
+	animate(transform = original_transform, time = 0.1 SECONDS)
+
+/datum/emote/jump/get_sound(mob/user)
+	return 'sound/items/weapons/thudswoosh.ogg'
+
+// Avoids playing sounds if we're a ghost
+/datum/emote/jump/should_play_sound(mob/user, intentional)
+	if(isliving(user))
+		return ..()
+	return FALSE

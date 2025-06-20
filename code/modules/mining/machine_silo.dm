@@ -38,7 +38,7 @@
 		GLOB.ore_silo_default = null
 
 	for(var/datum/component/remote_materials/mats as anything in ore_connected_machines)
-		mats.disconnect_from(src)
+		mats.disconnect()
 
 	ore_connected_machines = null
 	materials = null
@@ -98,7 +98,7 @@
 
 /obj/machinery/ore_silo/ui_assets(mob/user)
 	return list(
-		get_asset_datum(/datum/asset/spritesheet/sheetmaterials)
+		get_asset_datum(/datum/asset/spritesheet_batched/sheetmaterials)
 	)
 
 /obj/machinery/ore_silo/ui_interact(mob/user, datum/tgui/ui)
@@ -143,7 +143,7 @@
 
 	return data
 
-/obj/machinery/ore_silo/ui_act(action, list/params)
+/obj/machinery/ore_silo/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
 	if(.)
 		return
@@ -162,7 +162,7 @@
 			if(isnull(remote))
 				return
 
-			remote.disconnect_from(src)
+			remote.disconnect()
 			return TRUE
 
 		if("hold")

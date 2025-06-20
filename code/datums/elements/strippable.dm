@@ -93,6 +93,8 @@
 /datum/strippable_item/proc/try_equip(atom/source, obj/item/equipping, mob/user)
 	if(SEND_SIGNAL(user, COMSIG_TRY_STRIP, source, equipping) & COMPONENT_CANT_STRIP)
 		return FALSE
+	if(SEND_SIGNAL(source, COMSIG_BEING_STRIPPED, user, equipping) & COMPONENT_CANT_STRIP)
+		return FALSE
 
 	if (HAS_TRAIT(equipping, TRAIT_NODROP))
 		to_chat(user, span_warning("You can't put [equipping] on [source], it's stuck to your hand!"))
@@ -128,6 +130,8 @@
 	if (ismob(source))
 		if(SEND_SIGNAL(user, COMSIG_TRY_STRIP, source, item) & COMPONENT_CANT_STRIP)
 			return FALSE
+		if(SEND_SIGNAL(source, COMSIG_BEING_STRIPPED, user, item) & COMPONENT_CANT_STRIP)
+			return FALSE
 		var/mob/mob_source = source
 		if (!item.canStrip(user, mob_source))
 			return FALSE
@@ -156,7 +160,7 @@
 	//SKYRAT EDIT CHANGE END
 
 	to_chat(user, span_danger("You try to remove [source]'s [item.name]..."))
-	user.log_message("is stripping [key_name(source)] of [item].", LOG_ATTACK, color="red", redacted_copy = "is stripping [source] of [item].") // BUBBER EDIT - PUBLIC LOGGING
+	user.log_message("is stripping [key_name(source)] of [item].", LOG_ATTACK, color="red")
 	source.log_message("is being stripped of [item] by [key_name(user)].", LOG_VICTIM, color="orange", log_globally=FALSE)
 	item.add_fingerprint(src)
 
@@ -261,13 +265,17 @@
 	return finish_equip_mob(equipping, source, user)
 
 /datum/strippable_item/mob_item_slot/get_obscuring(atom/source)
-	if (iscarbon(source))
-		var/mob/living/carbon/carbon_source = source
-		return (carbon_source.check_obscured_slots() & item_slot) \
-			? STRIPPABLE_OBSCURING_COMPLETELY \
-			: STRIPPABLE_OBSCURING_NONE
+	if (!iscarbon(source))
+		return STRIPPABLE_OBSCURING_NONE
 
-	return FALSE
+	var/mob/living/carbon/carbon_source = source
+	if (carbon_source.check_obscured_slots() & item_slot)
+		return STRIPPABLE_OBSCURING_COMPLETELY
+
+	if (carbon_source.check_covered_slots() & item_slot)
+		return STRIPPABLE_OBSCURING_INACCESSIBLE
+
+	return STRIPPABLE_OBSCURING_NONE
 
 /datum/strippable_item/mob_item_slot/start_unequip(atom/source, mob/user)
 	. = ..()
@@ -292,7 +300,7 @@
 
 /// A utility function for `/datum/strippable_item`s to finish equipping an item to a mob.
 /proc/finish_equip_mob(obj/item/item, mob/source, mob/user)
-	user.log_message("has put [item] on [key_name(source)].", LOG_ATTACK, color="red", redacted_copy = "has put [item] on [source].") // BUBBER EDIT- PUBLIC LOGS
+	user.log_message("has put [item] on [key_name(source)].", LOG_ATTACK, color="red")
 	source.log_message("had [item] put on them by [key_name(user)].", LOG_VICTIM, color="orange", log_globally=FALSE)
 
 /// A utility function for `/datum/strippable_item`s to start unequipping an item from a mob.
@@ -307,7 +315,7 @@
 	if (!item.doStrip(user, source))
 		return FALSE
 
-	user.log_message("has stripped [key_name(source)] of [item].", LOG_ATTACK, color="red", redacted_copy = "has stripped [source] of [item])") // BUBBER EDIT - PUBLIC LOGS
+	user.log_message("has stripped [key_name(source)] of [item].", LOG_ATTACK, color="red")
 	source.log_message("has been stripped of [item] by [key_name(user)].", LOG_VICTIM, color="orange", log_globally=FALSE)
 
 	// Updates speed in case stripped speed affecting item
@@ -363,13 +371,13 @@
 			LAZYSET(result, "interacting", TRUE)
 
 		var/obscuring = item_data.get_obscuring(owner)
-		if (obscuring != STRIPPABLE_OBSCURING_NONE)
-			LAZYSET(result, "obscured", obscuring)
+		LAZYSET(result, "obscured", obscuring)
+		if (obscuring != STRIPPABLE_OBSCURING_NONE && obscuring != STRIPPABLE_OBSCURING_INACCESSIBLE)
 			items[strippable_key] = result
 			continue
 
 		var/obj/item/item = item_data.get_item(owner)
-		if (isnull(item) || (HAS_TRAIT(item, TRAIT_NO_STRIP) || (item.item_flags & EXAMINE_SKIP)))
+		if (isnull(item) || (HAS_TRAIT(item, TRAIT_NO_STRIP) || HAS_TRAIT(item, TRAIT_EXAMINE_SKIP)))
 			items[strippable_key] = result
 			continue
 
@@ -416,7 +424,8 @@
 			if (!strippable_item.should_show(owner, user))
 				return
 
-			if (strippable_item.get_obscuring(owner) == STRIPPABLE_OBSCURING_COMPLETELY)
+			var/obscured = strippable_item.get_obscuring(owner)
+			if (obscured == STRIPPABLE_OBSCURING_COMPLETELY || obscured == STRIPPABLE_OBSCURING_INACCESSIBLE)
 				return
 
 			var/item = strippable_item.get_item(owner)
@@ -482,7 +491,8 @@
 			if (!strippable_item.should_show(owner, user))
 				return
 
-			if (strippable_item.get_obscuring(owner) == STRIPPABLE_OBSCURING_COMPLETELY)
+			var/obscured = strippable_item.get_obscuring(owner)
+			if (obscured == STRIPPABLE_OBSCURING_COMPLETELY || obscured == STRIPPABLE_OBSCURING_INACCESSIBLE)
 				return
 
 			var/item = strippable_item.get_item(owner)

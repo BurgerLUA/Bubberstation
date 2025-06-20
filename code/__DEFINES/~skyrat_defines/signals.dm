@@ -61,7 +61,7 @@
 /// From mob/living/*/set_combat_mode(): (new_state)
 #define COMSIG_LIVING_COMBAT_MODE_TOGGLE "living_combat_mode_toggle"
 
-/// From /obj/item/organ/internal/stomach/after_eat(atom/edible)
+/// From /obj/item/organ/stomach/after_eat(atom/edible)
 #define COMSIG_STOMACH_AFTER_EAT "stomach_after_eat"
 
 /// For when a Hemophage's pulsating tumor gets added to their body.
@@ -110,3 +110,5 @@
 
 /// Whenever we need the soulcatcher soul to communicate something.
 #define COMSIG_CARRIER_MOB_SAY "carrier_mob_communicate"
+//signal sent when a mob tries to de-prone
+#define COMSIG_MOVABLE_REMOVE_PRONE_STATE "living_remove_prone_state"

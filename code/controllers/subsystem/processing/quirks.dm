@@ -5,6 +5,8 @@
 // Shifted to glob so they are generated at world start instead of risking players doing preference stuff before the subsystem inits
 GLOBAL_LIST_INIT_TYPED(quirk_blacklist, /list/datum/quirk, list(
 	list(/datum/quirk/item_quirk/blindness, /datum/quirk/item_quirk/nearsighted),
+	list(/datum/quirk/item_quirk/blindness, /datum/quirk/item_quirk/scarred_eye),
+	list(/datum/quirk/item_quirk/blindness, /datum/quirk/item_quirk/fluoride_stare),
 	list(/datum/quirk/item_quirk/blindness, /datum/quirk/touchy),
 	list(/datum/quirk/jolly, /datum/quirk/depression, /datum/quirk/apathetic, /datum/quirk/hypersensitive),
 	list(/datum/quirk/no_taste, /datum/quirk/vegetarian, /datum/quirk/deviant_tastes, /datum/quirk/gamer),
@@ -16,23 +18,24 @@ GLOBAL_LIST_INIT_TYPED(quirk_blacklist, /list/datum/quirk, list(
 	list(/datum/quirk/prosthetic_limb, /datum/quirk/quadruple_amputee, /datum/quirk/body_purist),
 	list(/datum/quirk/transhumanist, /datum/quirk/body_purist),
 	list(/datum/quirk/prosthetic_organ, /datum/quirk/tin_man, /datum/quirk/body_purist),
-	list(/datum/quirk/quadruple_amputee, /datum/quirk/paraplegic, /datum/quirk/hemiplegic),
+	list(/datum/quirk/quadruple_amputee, /datum/quirk/paraplegic, /datum/quirk/hemiplegic, /datum/quirk/permanent_limp), //BUBBER EDIT - Add Permanent Limp to this list.
 	//list(/datum/quirk/quadruple_amputee, /datum/quirk/frail), // SKYRAT EDIT REMOVAL- Since we have synth wounds now, frail has a large downside for prosthetics and such
 	list(/datum/quirk/social_anxiety, /datum/quirk/mute),
 	list(/datum/quirk/mute, /datum/quirk/softspoken),
 	list(/datum/quirk/poor_aim, /datum/quirk/bighands),
-	list(/datum/quirk/bilingual, /datum/quirk/foreigner),
+	list(/datum/quirk/bilingual, /datum/quirk/foreigner, /datum/quirk/csl),
 	list(/datum/quirk/spacer_born, /datum/quirk/item_quirk/settler),
 	list(/datum/quirk/photophobia, /datum/quirk/nyctophobia),
 	list(/datum/quirk/item_quirk/settler, /datum/quirk/freerunning),
 	list(/datum/quirk/numb, /datum/quirk/selfaware),
+	list(/datum/quirk/empath, /datum/quirk/evil),
 	//SKYRAT EDIT ADDITION BEGIN
 	list(/datum/quirk/equipping/nerve_staple, /datum/quirk/nonviolent),
 	list(/datum/quirk/equipping/nerve_staple, /datum/quirk/item_quirk/nearsighted),
 	list(/datum/quirk/no_guns, /datum/quirk/bighands, /datum/quirk/poor_aim),
 	list(/datum/quirk/no_guns, /datum/quirk/nonviolent),
 	list(/datum/quirk/spacer_born, /datum/quirk/oversized),
-	list(/datum/quirk/feline_aspect, /datum/quirk/item_quirk/canine, /datum/quirk/item_quirk/avian),
+	list(/datum/quirk/felinid_aspect, /datum/quirk/item_quirk/canine, /datum/quirk/item_quirk/avian),
 	list(/datum/quirk/all_nighter, /datum/quirk/heavy_sleeper),
 	list(/datum/quirk/light_drinker, /datum/quirk/drunkhealing),
 	list(/datum/quirk/oversized, /datum/quirk/freerunning),
@@ -42,7 +45,11 @@ GLOBAL_LIST_INIT_TYPED(quirk_blacklist, /list/datum/quirk, list(
 	//BUBBER EDIT ADDITION BEGIN
 	list(/datum/quirk/featherweight, /datum/quirk/oversized),
 	list(/datum/quirk/overweight, /datum/quirk/obese),
-	list(/datum/quirk/dominant_aura, /datum/quirk/well_trained)
+	list(/datum/quirk/dominant_aura, /datum/quirk/well_trained),
+	list(/datum/quirk/equipping/entombed, /datum/quirk/equipping/seamless_clothes),
+	list(/datum/quirk/equipping/entombed, /datum/quirk/badback),
+	list(/datum/quirk/unblinking, /datum/quirk/item_quirk/fluoride_stare),
+	list(/datum/quirk/micro, /datum/quirk/micro/smaller, /datum/quirk/micro/smallest, /datum/quirk/oversized),
 	//BUBBER EDIT ADDITION END
 ))
 
@@ -62,12 +69,12 @@ GLOBAL_LIST_INIT(quirk_string_blacklist, generate_quirk_string_blacklist())
 // - Quirk datums are stored and hold different effects, as well as being a vector for applying trait string
 PROCESSING_SUBSYSTEM_DEF(quirks)
 	name = "Quirks"
-	init_order = INIT_ORDER_QUIRKS
 	flags = SS_BACKGROUND
 	runlevels = RUNLEVEL_GAME
 	wait = 1 SECONDS
 
 	var/list/quirks = list() //Assoc. list of all roundstart quirk datum types; "name" = /path/
+	var/list/datum/quirk/quirk_prototypes = list()
 	var/list/quirk_points = list() //Assoc. list of quirk names and their "point cost"; positive numbers are good traits, and negative ones are bad
 	///An assoc list of quirks that can be obtained as a hardcore character, and their hardcore value.
 	var/list/hardcore_quirks = list()
@@ -98,10 +105,13 @@ PROCESSING_SUBSYSTEM_DEF(quirks)
 		if(initial(quirk_type.erp_quirk) && CONFIG_GET(flag/disable_erp_preferences))
 			continue
 		// Hidden quirks aren't visible to TGUI or the player
+		#if !defined(UNIT_TESTS)
 		if (initial(quirk_type.hidden_quirk))
 			continue
+		#endif
 		// SKYRAT EDIT ADDITION END
 
+		quirk_prototypes[type] = new type
 		quirks[initial(quirk_type.name)] = quirk_type
 		quirk_points[initial(quirk_type.name)] = initial(quirk_type.value)
 

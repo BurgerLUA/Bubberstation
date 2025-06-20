@@ -4,6 +4,7 @@
 	dna?.species?.on_owner_login(src)
 
 	if(SStts.tts_enabled && isnull(voice)) // SKYRAT EDIT - None option for TTS - ORIGINAL: if(SStts.tts_enabled && !voice)
+
 		voice = pick(SStts.available_speakers)
 
 	if(!LAZYLEN(afk_thefts))
@@ -31,5 +32,5 @@
 	if(LAZYLEN(afk_thefts) >= AFK_THEFT_MAX_MESSAGES)
 		print_msg += span_warning("There may have been more, but that's all you can remember...")
 
-	to_chat(src, examine_block(print_msg.Join("\n")))
+	to_chat(src, boxed_message(print_msg.Join("\n")))
 	LAZYNULL(afk_thefts)

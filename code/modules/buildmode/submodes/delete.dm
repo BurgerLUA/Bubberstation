@@ -2,7 +2,7 @@
 	key = "delete"
 
 /datum/buildmode_mode/delete/show_help(client/builder)
-	to_chat(builder, span_purple(examine_block(
+	to_chat(builder, span_purple(boxed_message(
 		"[span_bold("Delete an object")] -> Left Mouse Button on obj/turf/mob\n\
 		[span_bold("Delete all objects of a type")] -> Right Mouse Button on obj/turf/mob"))
 	)
@@ -19,7 +19,7 @@
 			var/turf/T = get_turf(object)
 			qdel(object)
 			if(T && c.prefs.read_preference(/datum/preference/toggle/admin/delete_sparks))
-				playsound(T, 'sound/magic/Repulse.ogg', 100, 1)
+				playsound(T, 'sound/effects/magic/repulse.ogg', 100, 1)
 				var/datum/effect_system/spark_spread/quantum/sparks = new
 				sparks.set_up(10, 1, T)
 				sparks.attach(T)

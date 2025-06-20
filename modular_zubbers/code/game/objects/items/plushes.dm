@@ -4,7 +4,7 @@
 	icon = 'modular_zubbers/icons/obj/toys/plushes.dmi'
 	icon_state = "chaotic_toaster"
 	attack_verb_simple = list("beeped", "booped", "pinged")
-	squeak_override = list('sound/machines/beep.ogg' = 1)
+	squeak_override = list('sound/machines/beep/beep.ogg' = 1)
 
 /obj/item/toy/plush/Synth
 	name = "Synth plushie"
@@ -32,7 +32,7 @@
 	icon_state = "chirp"//Sprited by Kan3/kaylexi
 	attack_verb_continuous = list("chirps", "chimes")
 	attack_verb_simple = list("chirps")
-	squeak_override = list('sound/machines/beep.ogg' = 1)
+	squeak_override = list('sound/machines/beep/beep.ogg' = 1)
 	gender = FEMALE
 
 /obj/item/toy/plush/bigdeer
@@ -78,14 +78,14 @@
 	desc = "He looks very eepy. A tag on the back of the plushie reads, 'Happy birthday, big guy.'"
 	icon = 'modular_zubbers/icons/obj/toys/plushes.dmi'
 	icon_state = "tiredtesh"
-	squeak_override = list('modular_skyrat/modules/emotes/sound/emotes/Nose_boop.ogg' = 1)
+	squeak_override = list('modular_zubbers/sound/emotes/nose_boop.ogg' = 1)
 
 /obj/item/toy/plush/xenoplush
 	name = "xenomorph plushie"
 	desc = "A cute rendition of the notorious xenomorph. Its stuffing is an acidic green colour."
 	icon = 'modular_zubbers/icons/obj/toys/plushes.dmi'
 	icon_state = "xenoplush"
-	squeak_override = list('sound/voice/hiss6.ogg' = 1)
+	squeak_override = list('sound/mobs/non-humanoids/hiss/hiss6.ogg' = 1)
 	lefthand_file = 'modular_zubbers/icons/mob/inhands/items/plushes_lefthand.dmi'
 	righthand_file = 'modular_zubbers/icons/mob/inhands/items/plushes_righthand.dmi'
 	inhand_icon_state = "xenoplush"
@@ -121,7 +121,7 @@
 	icon_state = "blovyplushie"
 	attack_verb_continuous = list("blorbles", "slimes", "absorbs")
 	attack_verb_simple = list("blorble", "slime", "absorb")
-	squeak_override = list('sound/effects/blobattack.ogg' = 1)
+	squeak_override = list('sound/effects/blob/blobattack.ogg' = 1)
 
 /obj/item/toy/plush/tunafish
 	name = "Piscene Paddle" //Donator plush for Astroturf, sprited by Crumpaloo
@@ -130,7 +130,7 @@
 	icon_state = "tunafish"
 	attack_verb_continuous = list("slaps", "whacks")
 	attack_verb_simple = list("slap", "whack")
-	squeak_override = list('sound/weapons/slap.ogg' = 1)
+	squeak_override = list('sound/items/weapons/slap.ogg' = 1)
 	lefthand_file = 'modular_zubbers/icons/mob/inhands/items/plushes_lefthand.dmi'
 	righthand_file = 'modular_zubbers/icons/mob/inhands/items/plushes_righthand.dmi'
 	inhand_icon_state = "tunafish"
@@ -142,7 +142,7 @@
 	icon_state = "secoff"
 	attack_verb_continuous = list("shoots (and misses)", "batongs", "annoys", "harmbatons", "magdumps")
 	attack_verb_simple = list("shot (and missed)", "batong", "annoy", "harmbaton", "magdump")
-	squeak_override = list('sound/weapons/gun/general/bolt_rack.ogg' = 1)
+	squeak_override = list('sound/items/weapons/gun/general/bolt_rack.ogg' = 1)
 
 /obj/item/toy/plush/cescrewsplush
 	name = "Chief Screws Plush" //Plush for Steals The Screwdriver/SteamStucKobold, sprited by stickygoat. and Amorbis
@@ -153,3 +153,157 @@
 	attack_verb_simple = list("slap", "plap", "smear")
 	gender = FEMALE
 	squeak_override = list('sound/misc/soggy.ogg'=1)
+
+/obj/item/toy/plush/internshiba
+	name = "Intern Shiba Plush" //Plush for Kazumi Hasegawa/sprited by Amorbis
+	desc = "An adorable shiba inu plushie of a well-known intern mutt."
+	icon = 'modular_zubbers/icons/obj/toys/plushes.dmi'
+	icon_state = "internshiba"
+	attack_verb_continuous = list("baps", "paws", "claws")
+	attack_verb_simple = list("bap", "paw", "claw")
+	gender = MALE
+	squeak_override = list('sound/mobs/non-humanoids/dog/growl2.ogg' = 1)
+
+/obj/item/toy/plush/bottomsynf
+	name = "CentCom Synth Fox Plush"
+	desc = "The plush of a synth fox who enjoys being high in the chain of command. Or so it seems. It's wearing its favourite CentCom formal coat."
+	icon = 'modular_zubbers/icons/obj/toys/plushes.dmi'
+	icon_state = "bottomsynf"
+	attack_verb_continuous = list("emags", "hacks", "geckers")
+	attack_verb_simple = list("beeps", "boops", "pings", "geckers")
+	gender = MALE
+	squeak_override = list('sound/machines/terminal_alert_short.ogg' = 1)
+
+// Silly plush for kurzaen, sprited and coded by Waterpig
+// Spontaneously combusts when touched by other plushies
+/obj/item/toy/plush/cat_annoying
+	name = "\improper Annoying Cat Plush"
+	desc = "This plush reeks of Green apples, and HATES physical affection. You can feel it looking at you with a judgmental gaze.."
+	icon = 'modular_zubbers/icons/obj/toys/plushes.dmi'
+	icon_state = "annoyingcat"
+	gender = MALE
+	squeak_override = list(
+		'modular_skyrat/modules/emotes/sound/voice/scream_m1.ogg' = 1,
+		'modular_skyrat/modules/emotes/sound/voice/scream_m2.ogg' = 1,
+	)
+
+/obj/item/toy/plush/cat_annoying/attackby(obj/item/I, mob/living/user, params)
+	if(istype(I, /obj/item/toy/plush))
+		combust()
+	return ..()
+
+/obj/item/toy/plush/cat_annoying/pre_attack(atom/A, mob/living/user, params)
+	if(istype(A, /obj/item/toy/plush))
+		combust()
+	return ..()
+
+/obj/item/toy/plush/cat_annoying/proc/combust()
+	src.fire_act(5000)
+	src.visible_message(span_notice("The [src.name] spontaneously combusts from physical affection!"))
+	addtimer(CALLBACK(src, PROC_REF(ash)), 2 SECONDS)
+
+/obj/item/toy/plush/cat_annoying/proc/ash()
+	new /obj/effect/decal/cleanable/ash(get_turf(src))
+	src.visible_message(span_warning("The [src.name] turns to ash!"))
+	qdel(src)
+
+// Plush for Vanilla
+/obj/item/toy/plush/suspicious_protogen
+	name = "\improper Suspicious protogen plush"
+	desc = "A suspicious pink looking protogen plushie commonly seen roaming the station almost everywhere, \
+			perfect for cuddling when you feel upset at something."
+	icon = 'modular_zubbers/icons/obj/toys/plushes.dmi'
+	icon_state = "pinkproot"
+	gender = FEMALE
+	squeak_override = list('modular_skyrat/modules/emotes/sound/emotes/dwoop.ogg' = 1)
+
+// Plush for ZeferwasnttakenFR
+/obj/item/toy/plush/foxy_plush
+	name = "tiny prankster fox plush"
+	desc = "A fox plush made to look like a certain prankster fox. Unsuprisingly it also smells like ocean breeze and a nice warm forge. \ Batteries not included for the plastic arm!"
+	icon = 'modular_zubbers/icons/obj/toys/plushes.dmi'
+	icon_state = "FoxyPlush"
+	gender = MALE
+	squeak_override = list('modular_zubbers/sound/emotes/claponce1.ogg' = 1)
+
+// Rin/Yayyay007's plush
+/obj/item/toy/plush/squeaky_toy
+	name = "squeaky rat plushie"
+	desc = "A plush made to order of a particular rodent. Smells like an awful lover. \ A small sticker says, TUG MY EARS!"
+	icon = 'modular_zubbers/icons/obj/toys/plushes.dmi'
+	icon_state = "squeaky_toy"
+	gender = MALE
+	squeak_override = list('sound/mobs/non-humanoids/mouse/mousesqueek.ogg' = 1)
+
+// Sophie/Cydia's plush
+/obj/item/toy/plush/androiddog
+	name = "android dog plushie"
+	desc = "A faded plushie toy of an android dog. Will not bite. \ A sticker says 'Push me!' on a little heart on the hand."
+	icon = 'modular_zubbers/icons/obj/toys/plushes.dmi'
+	icon_state = "androiddog"
+	gender = FEMALE
+	squeak_override = list('modular_zubbers/sound/emotes/arf.ogg' = 1)
+
+// xPokee's plush
+/obj/item/toy/plush/ghoul
+	name = "intern ghoul plushie"
+	desc = "Even the marketable plushie of this thing is utterly terrifying. At least it's cuddly..."
+	icon = 'modular_zubbers/icons/obj/toys/plushes.dmi'
+	icon_state = "johnghoul"
+	attack_verb_continuous = list("ghouls")
+	attack_verb_simple = list("ghoul")
+	squeak_override = list('modular_zubbers/code/modules/blooper/voice/bloopers/kazooie/ehh.ogg' = 1)
+
+// plushie for BeoTheKobold
+// sprite by Cepha, code by Mitryll
+/obj/item/toy/plush/mold_kobold
+	name = "hemophage awareness kobold"
+	desc = "A cuddly kobold plushie. Produced by Nanotrasen in the soft likeness of a hemophage employee; \
+			focus groups thought this design played less into hemophage stereotypes as opposed to the previous iteration, \
+			Lord Grog the Vile Parasite. A tag on the left leg says 10% of proceeds go to blood banks!"
+	icon = 'modular_zubbers/icons/obj/toys/plushes.dmi'
+	icon_state = "themold"
+	attack_verb_continuous = list("bites", "curses", "drains")
+	attack_verb_simple = list("bite", "invoke", "claw")
+	gender = FEMALE
+
+// Plushie for Decinomics
+/obj/item/toy/plush/sinvox
+	name = "sinister vox plushie"
+	desc = "An evil looking toy. It's got a vox beak that splits into mandibles like a bug;\
+		its tail looks like a copy of the xenomorph plushie stitched together poorly.\
+		Property and copyright of VOXXXED Studios..."
+	icon = 'modular_zubbers/icons/obj/toys/plushes.dmi'
+	icon_state = "sinvox"
+	attack_verb_continuous = list("hisses at", "bites", "mauls", "quills", "tail stabs")
+	attack_verb_simple = list("hiss at", "bite", "maul", "quill", "tail stab")
+	gender = MALE
+	squeak_override = list(
+		'sound/mobs/non-humanoids/hiss/hiss2.ogg' = 1,
+		'modular_skyrat/modules/emotes/sound/emotes/voxrustle.ogg' = 1,
+	)
+
+/obj/item/toy/plush/mothroach_plush
+	name = "mothroach plush"
+	desc = "A plushie featuring the likeness everyone's favorite genetic freak-turned station pet. Do not soak it in milk and throw it against a wall."
+	icon = 'modular_zubbers/icons/obj/toys/plushes.dmi'
+	icon_state = "mothroach"
+	attack_verb_continuous = list("mothroaches", "moths", "roaches")
+	attack_verb_simple = list("mothroach", "moth", "roach")
+	gender = MALE
+	squeak_override = list( 'sound/mobs/humanoids/moth/scream_moth.ogg' = 1, )
+
+/obj/item/toy/plush/moth/lovers
+	name = "lovers moth plushie"
+	desc = "An adorable mothperson plushie. It's a lovely bug!"
+	icon = 'modular_zubbers/icons/obj/toys/plushes.dmi'
+	icon_state = "moffplush_lovers"
+
+/obj/item/toy/plush/lazy_synth
+	name = "lazy synth plush"
+	desc = "A soft plush of an extremely lazy synth. Might be found loafing in random places."
+	attack_verb_continuous = list("squishes", "loafs on", "sleeps on", "eggs")
+	attack_verb_simple = list("squish", "loaf on", "sleep on", "egg")
+	icon = 'modular_zubbers/icons/obj/toys/plushes.dmi'
+	icon_state = "lazy_synth"
+	squeak_override = list('modular_zubbers/sound/misc/squeakle.ogg' = 1)

@@ -89,6 +89,7 @@
 /datum/techweb_node/office_equip/New()
 	design_ids += list(
 		"gbp_machine",
+		"plastic_hair_tie",
 	)
 	return ..()
 
@@ -99,18 +100,10 @@
 	)
 	return ..()
 
-/datum/techweb_node/cafeteria_equip/New()
-	design_ids += list(
-		"bowl",
-		"drinking_glass",
-		"shot_glass",
-	)
-	return ..()
-
 /datum/techweb_node/medbay_equip/New()
 	design_ids += list(
 		"hospital_gown",
-		"anesthetic_machine",
+		"breath_machine",
 		"smartdartgun",
 	)
 	return ..()
@@ -143,12 +136,6 @@
 
 ////////////////////////Computer tech////////////////////////
 
-/datum/techweb_node/consoles/New()
-	design_ids += list(
-		"time_clock_frame",
-	)
-	return ..()
-
 /datum/techweb_node/hud/New()
 	design_ids += list(
 		"health_hud_prescription",
@@ -175,11 +162,17 @@
 		"nifsoft_hud_diagnostic",
 		"nifsoft_hud_cargo",
 	)
+
+	design_ids -= list(
+		"ci-medhud",
+		"ci-diaghud",
+		"ci-sechud",
+	)
 	return ..()
 
 ////////////////////////Medical////////////////////////
 
-/datum/techweb_node/cytology/New()
+/datum/techweb_node/medbay_equip/New()
 	design_ids += list(
 		"self_actualization_device",
 	)
@@ -189,6 +182,12 @@
 	design_ids += list(
 		"cybernetic_tongue",
 		"cybernetic_tongue_lizard",
+	)
+	return ..()
+
+/datum/techweb_node/chem_synthesis/New()
+	design_ids += list(
+		"plumbing_eng",
 	)
 	return ..()
 
@@ -218,17 +217,6 @@
 
 /////////////////////////weaponry tech/////////////////////////
 
-/datum/techweb_node/basic_arms/New()
-	design_ids += list(
-		"ammoworkbench_disk_lethal",
-	)
-	return ..()
-
-/datum/techweb_node/riot_supression/New()
-	design_ids += list(
-		"ammo_workbench",
-	)
-	return ..()
 
 /datum/techweb_node/electric_weapons/New()
 	design_ids += list(
@@ -259,11 +247,14 @@
 	design_ids += list(
 		"multi_cell_charger",
 	)
-	return ..()
 
-/datum/techweb_node/plumbing/New()
-	design_ids += list(
-		"plumbing_eng",
+	design_ids -= list(
+		"rcd_loaded",
+		"rcd_ammo",
+		"rtd_loaded",
+		"weldingmask",
+		"magboots",
+		"flatpacker",
 	)
 	return ..()
 
@@ -274,7 +265,6 @@
 	return ..()
 
 /////////////////////////robotics tech/////////////////////////
-
 /datum/techweb_node/robotics/New()
 	design_ids += list(
 		"borg_upgrade_snacks",
@@ -295,7 +285,6 @@
 		"borg_upgrade_cargo_tele",
 		"borg_upgrade_forging",
 		"borg_upgrade_brush",
-		"borg_upgrade_shrink",
 	)
 	return ..()
 
@@ -312,17 +301,5 @@
 	)
 	design_ids -= list(
 		"borg_upgrade_pinpointer",
-	)
-	return ..()
-
-/datum/techweb_node/borg_service/New()
-	design_ids += list(
-		"borg_upgrade_botany"
-	)
-	return ..()
-
-/datum/techweb_node/borg_mining/New()
-	design_ids += list(
-		"borg_upgrade_welding",
 	)
 	return ..()

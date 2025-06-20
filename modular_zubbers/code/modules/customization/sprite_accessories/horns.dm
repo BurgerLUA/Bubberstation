@@ -33,7 +33,6 @@
 	name = "Biter's Horns"
 	icon_state = "biterhorns"
 
-
 /datum/sprite_accessory/horns/bubber/big
 	icon = 'modular_zubbers/icons/customization/horns_big.dmi'
 
@@ -52,3 +51,63 @@
 /datum/sprite_accessory/horns/bubber/halo //Sprites from Aurora Station
 	name = "Halo"
 	icon_state = "halo"
+
+/datum/sprite_accessory/horns/bubber/big/antlers //sprites by Gavla
+	name = "Aged Antlers"
+	icon_state = "antlers_more"
+
+/datum/sprite_accessory/horns/bubber/big/antlers/large
+	name = "Large Antlers"
+	icon_state = "antlers_large"
+
+/datum/sprite_accessory/horns/bubber/big/antlers/regal
+	name = "Regal Antlers"
+	icon_state = "antlers_regal"
+
+/datum/sprite_accessory/horns/bubber/big/antlers/monarch
+	name = "Monarch Antlers"
+	icon_state = "antlers_monarch"
+
+/datum/sprite_accessory/horns/bubber/big/antlers/short	//end of sprites by Gavla
+	name = "Short Antlers"
+	icon_state = "antlers_short"
+
+/datum/sprite_accessory/horns/bubber/messenger
+	name = "Winged Messenger"
+	icon_state = "messenger" // Start of by @Sweettoothart
+	color_src = USE_ONE_COLOR
+
+/datum/sprite_accessory/horns/bubber/antennae/bent
+	name = "Bent Antennae"
+	icon_state = "antennae_bent"
+	color_src = USE_ONE_COLOR
+
+/datum/sprite_accessory/horns/bubber/antennae/wisteria
+	name = "Wisteria Antennae"
+	icon_state = "antennae_wisteria"
+	color_src = USE_ONE_COLOR
+
+/datum/sprite_accessory/horns/bubber/big/antenna_slanted
+	name = "Slanted Antenna"
+	icon_state = "antenna_slanted" // End of by @Sweettoothart
+	color_src = USE_ONE_COLOR
+
+/datum/sprite_accessory/horns/bubber/newsimple //Sprites by thgvr
+	name = "Simple (New)"
+	icon_state = "newsimple"
+
+/datum/sprite_accessory/horns/bubber/newbroken
+	name = "Broken (New)"
+	icon_state = "newbroken"
+
+/datum/sprite_accessory/horns/bubber/newram
+	name = "Ram (New)"
+	icon_state = "newram"
+
+/datum/sprite_accessory/horns/bubber/lightning
+	name = "Lightning"
+	icon_state = "lightning"
+
+/datum/sprite_accessory/horns/bubber/brimstone //End of sprites by thgvr
+	name = "Brimstone"
+	icon_state = "brimstone"

@@ -12,7 +12,7 @@
 
 /datum/surgery/brain_surgery/mechanic
 	name = "Wetware OS Diagnostics"
-	requires_bodypart_type = BODYTYPE_ROBOTIC
+	requires_bodypart_type = BODYTYPE_ROBOTIC | BODYTYPE_NANO
 	possible_locs = list(BODY_ZONE_HEAD)
 	steps = list(
 		/datum/surgery_step/mechanic_open,
@@ -31,9 +31,9 @@
 		/obj/item/pen = 15) //don't worry, pouring some alcohol on their open brain will get that chance to 100
 	repeatable = TRUE
 	time = 100 //long and complicated
-	preop_sound = 'sound/surgery/hemostat1.ogg'
-	success_sound = 'sound/surgery/hemostat1.ogg'
-	failure_sound = 'sound/surgery/organ2.ogg'
+	preop_sound = 'sound/items/handling/surgery/hemostat1.ogg'
+	success_sound = 'sound/items/handling/surgery/hemostat1.ogg'
+	failure_sound = 'sound/items/handling/surgery/organ2.ogg'
 
 /datum/surgery_step/fix_brain/mechanic
 	name = "perform neural debugging (hemostat or multitool)"

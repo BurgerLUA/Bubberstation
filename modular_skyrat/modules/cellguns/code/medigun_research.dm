@@ -239,6 +239,9 @@
 		/datum/material/glass = SHEET_MATERIAL_AMOUNT,
 		/datum/material/plasma = HALF_SHEET_MATERIAL_AMOUNT,
 		/datum/material/diamond = HALF_SHEET_MATERIAL_AMOUNT,
-		/datum/material/bluespace = SHEET_MATERIAL_AMOUNT,
+		/datum/material/bluespace = SHEET_MATERIAL_AMOUNT * 3,
 	)
-	build_path = /obj/item/device/custom_kit/empty_cell/relocator
+	build_path = /obj/item/weaponcell/medical/utility/relocation
+
+#undef RND_SUBCATEGORY_WEAPONS_MEDICALAMMO
+#undef RND_MEDICALAMMO_UTILITY

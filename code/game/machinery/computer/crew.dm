@@ -132,7 +132,7 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 		JOB_STATION_ENGINEER = 41,
 		JOB_ATMOSPHERIC_TECHNICIAN = 42,
 		JOB_ENGINEERING_GUARD = 43, // SKYRAT EDIT ADDITION
-		JOB_TELECOMMS_SPECIALIST = 44, // SKYRAT EDIT ADDITION	
+		JOB_TELECOMMS_SPECIALIST = 44, // SKYRAT EDIT ADDITION
 		// 50-59: Cargo
 		JOB_QUARTERMASTER = 50,
 		JOB_SHAFT_MINER = 51,
@@ -152,8 +152,9 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 		JOB_MIME = 68,
 		JOB_JANITOR = 69,
 		JOB_LAWYER = 71,
-		JOB_BARBER = 72, // SKYRAT EDIT ADDITION
+		JOB_BARBER = 74, // SKYRAT EDIT ADDITION
 		JOB_BOUNCER = 73, // SKYRAT EDIT ADDITION
+		JOB_PSYCHOLOGIST = 72,
 		// 200-229: Centcom
 		JOB_CENTCOM_ADMIRAL = 200,
 		JOB_CENTCOM = 201,
@@ -199,7 +200,7 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 		z = T.z
 	. = list(
 		"sensors" = update_data(z),
-		"link_allowed" = HAS_AI_ACCESS(user)
+		"link_allowed" = HAS_AI_ACCESS(user),
 	)
 
 /datum/crewmonitor/proc/update_data(z)
@@ -207,9 +208,9 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 		return data_by_z["[z]"]
 
 	var/list/results = list()
-	for(var/tracked_mob in GLOB.suit_sensors_list)
+	for(var/tracked_mob in GLOB.suit_sensors_list | GLOB.nanite_sensors_list) // BUBBER CHANGE - NANITES
 		if(!tracked_mob)
-			stack_trace("Null entry in suit sensors list.")
+			stack_trace("Null entry in suit sensors or nanite sensors list.") // BUBBER CHANGE - NANITES
 			continue
 
 		var/mob/living/tracked_living_mob = tracked_mob
@@ -226,25 +227,40 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 		if(pos.z != z && (!is_station_level(pos.z) || !is_station_level(z)) && !HAS_TRAIT(tracked_living_mob, TRAIT_MULTIZ_SUIT_SENSORS))
 			continue
 
+		var/sensor_mode // BUBBER ADDITION - NANITES
+		var/has_monitoring_nanites = FALSE // BUBBER ADDITION - NANITES
 		var/mob/living/carbon/human/tracked_human = tracked_living_mob
 
-		// Check their humanity.
+		// Set sensor level based on whether we're in the nanites list or the suit sensor list.
+		if(tracked_living_mob in GLOB.nanite_sensors_list) // BUBBER CHANGE - NANITES
+			sensor_mode = SENSOR_COORDS
+			has_monitoring_nanites = TRUE
+
 		if(!ishuman(tracked_human))
 			stack_trace("Non-human mob is in suit_sensors_list: [tracked_living_mob] ([tracked_living_mob.type])")
 			continue
 
+		// BUBBER CHANGE START - NANITES
 		// Check they have a uniform
 		var/obj/item/clothing/under/uniform = tracked_human.w_uniform
-		if (!istype(uniform))
-			stack_trace("Human without a suit sensors compatible uniform is in suit_sensors_list: [tracked_human] ([tracked_human.type]) ([uniform?.type])")
-			continue
-
-		// Check if their uniform is in a compatible mode.
-		if((uniform.has_sensor == NO_SENSORS) || !uniform.sensor_mode) //BUBBERSTATION CHANGE: 'uniform.has_sensor <= NO_SENSORS' TO 'uniform.has_sensor == NO_SENSORS'
-			stack_trace("Human without active suit sensors is in suit_sensors_list: [tracked_human] ([tracked_human.type]) ([uniform.type])")
-			continue
-
-		var/sensor_mode = uniform.sensor_mode
+		if(!has_monitoring_nanites)
+			// they don't have nanites, lets check uniform
+			if(!istype(uniform))
+				// no uniform, somethings fucked
+				stack_trace("Human without a uniform or nanites is in suit_sensors_list: [tracked_human] ([tracked_human.type])")
+				continue
+			else
+				// they have a uniform, lets check sensor status
+				if(uniform.has_sensor == NO_SENSORS)
+					// no sensors in the uniform, somethings fucked
+					stack_trace("Human without a suit sensors compatible uniform or nanites is in suit_sensors_list: [tracked_human] ([tracked_human.type]) ([uniform.type])")
+					continue
+				if(!uniform.sensor_mode)
+					// sensors are disabled, somethings fucked
+					stack_trace("Human without active suit sensors or nanites is in suit_sensors_list: [tracked_human] ([tracked_human.type]) ([uniform.type])")
+					continue
+				sensor_mode = uniform.sensor_mode
+		// BUBBER CHANGE END - NANITES
 
 		// The entry for this human
 		var/list/entry = list(
@@ -262,33 +278,29 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 			if (jobs[trim_assignment] != null)
 				entry["ijob"] = jobs[trim_assignment]
 
-		//BUBBERSTATION CHANGE: EMP SENSORS
-		if(uniform.has_sensor == BROKEN_SENSORS)
-			entry["is_robot"] = rand(0,1)
-			entry["life_status"] = rand(0,1)
-			entry["area"] = prob(80) ? pick_list(ION_FILE, "ionarea") : pick("COWGIRL","REVERSE COWGIRL","DOGGYSTYLE","MISSIONARY","69")
-			entry["oxydam"] = rand(0,1000)
-			entry["toxdam"] = rand(0,1000)
-			entry["burndam"] =rand(0,1000)
-			entry["brutedam"] = rand(0,1000)
-			entry["health"] = -50
-			entry["can_track"] = tracked_living_mob.can_track()
-			results[++results.len] = entry
-			continue
-		//BUBBERSTATION CHANGE END
-
 		// SKYRAT EDIT BEGIN: Checking for robotic race
 		if (issynthetic(tracked_human))
 			entry["is_robot"] = TRUE
 		// SKYRAT EDIT END
 
+		// Broken sensors show garbage data
+		if (uniform?.has_sensor == BROKEN_SENSORS) // BUBBER EDIT CHANGE - NANITES - Original: if (uniform.has_sensor == BROKEN_SENSORS)
+			entry["life_status"] = rand(0,1)
+			entry["area"] = pick_list (ION_FILE, "ionarea")
+			entry["oxydam"] = rand(0,175)
+			entry["toxdam"] = rand(0,175)
+			entry["burndam"] = rand(0,175)
+			entry["brutedam"] = rand(0,175)
+			entry["health"] = -50
+			entry["can_track"] = tracked_living_mob.can_track()
+			results[++results.len] = entry
+			continue
+
 		// BUBBERSTATION EDIT BEGIN: Add DNR status
 		// If sensors are above living tracking, set DNR state
 		if (sensor_mode >= SENSOR_LIVING)
 			entry["is_dnr"] = tracked_human.get_dnr()
-		// BUBBERSTATION EDIT END
 
-		// Binary living/dead status
 		// Current status
 		if (sensor_mode >= SENSOR_LIVING)
 			entry["life_status"] = tracked_living_mob.stat
@@ -318,7 +330,8 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 
 	return results
 
-/datum/crewmonitor/ui_act(action, params)
+/datum/crewmonitor/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+
 	. = ..()
 	if(.)
 		return

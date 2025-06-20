@@ -52,7 +52,6 @@
 /obj/structure/showcase/machinery/oldpod/used/psyker
 	name = "opened mental energizer"
 	desc = "A mental energizer that has recently discharged its occupant. The pod appears non-functional."
-	icon = 'icons/obj/machines/sleeper.dmi'
 	icon_state = "psykerpod-open"
 
 /obj/structure/showcase/cyborg/old
@@ -128,8 +127,8 @@
 
 /obj/structure/showcase/katana
 	name = "seppuku katana"
-	density = 0
 	desc = "Welp, only one way to recover your honour."
+	density = 0
 	icon = 'icons/obj/weapons/sword.dmi'
 	icon_state = "katana"
 

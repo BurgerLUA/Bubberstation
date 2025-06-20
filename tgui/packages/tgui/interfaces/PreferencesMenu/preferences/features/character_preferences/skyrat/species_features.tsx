@@ -41,7 +41,7 @@ export const flavor_text: Feature<string> = {
 };
 
 export const silicon_flavor_text: Feature<string> = {
-  name: 'Flavor Text (Silicon)',
+  name: 'Silicon Flavor Text',
   description: "Only appears if you're playing as a borg/AI.",
   component: FeatureTextInput,
 };
@@ -658,6 +658,13 @@ export const naga_sole: FeatureToggle = {
   name: 'Taur (Naga) disable hardened soles',
   description:
     'If using a serpentine taur body, determines if you are immune to caltrops and a few other effects of being barefoot.',
+  component: CheckboxInput,
+};
+
+export const synthetic_taur: FeatureToggle = {
+  name: 'Taur (Synthetic)',
+  description:
+    "If using a taur body, determines if the taur body is synthetic, doesn't apply to taur bodies that are already synthetic.",
   component: CheckboxInput,
 };
 

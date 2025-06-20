@@ -8,8 +8,7 @@
 	atom_flags = PREVENT_CONTENTS_EXPLOSION_1
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
-	slowdown_inactive = 0.5
-	slowdown_active = 0
+	slowdown_deployed = 0
 	allowed_suit_storage = list(
 		/obj/item/ammo_box,
 		/obj/item/ammo_casing,
@@ -58,6 +57,12 @@
 	fire = 100
 	acid = 100
 	wound = 15
+
+/datum/mod_theme/asset_protection/set_skin(obj/item/mod/control/mod, skin)
+	. = ..()
+	var/parts = mod.get_parts()
+	for(var/obj/item/part as anything in parts + mod)
+		part.worn_icon_digi = 'modular_zubbers/icons/mob/clothing/modsuit/mod.dmi'
 
 /datum/mod_theme/mining/New()
 	variants += list(

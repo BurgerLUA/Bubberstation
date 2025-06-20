@@ -23,9 +23,9 @@
 	name = "Skateboard"
 	item_path = /obj/item/melee/skateboard
 
-/datum/loadout_item/inhand/toolbox
-	name = "Full Toolbox"
-	item_path = /obj/item/storage/toolbox/mechanical
+/datum/loadout_item/inhand/emergency_toolbox
+	name = "Emergency Toolbox"
+	item_path = /obj/item/storage/toolbox/emergency
 	blacklisted_roles = list(JOB_PRISONER)
 
 /datum/loadout_item/inhand/bouquet_mixed
@@ -52,8 +52,8 @@
 	name = "Folded Kingdom Of Agurkrral Flag"
 	item_path = /obj/item/sign/flag/ssc
 
-/datum/loadout_item/inhand/flag_solfed
-	name = "Folded Sol Federation Flag"
+/datum/loadout_item/inhand/flag_terragov
+	name = "Folded Terran Government Flag"
 	item_path = /obj/item/sign/flag/terragov
 
 /datum/loadout_item/inhand/flag_moghes

@@ -38,7 +38,7 @@
 		inserted_card = null
 	return ..()
 
-/datum/component/armament/proc/on_attackby(atom/target, obj/item, mob/user)
+/datum/component/armament/proc/on_attackby(datum/source, obj/item, mob/user, list/modifiers)
 	SIGNAL_HANDLER
 
 	if(!user || !item)
@@ -177,7 +177,7 @@
 	user.put_in_hands(inserted_card)
 	inserted_card = null
 	to_chat(user, span_notice("Card ejected!"))
-	playsound(src, 'sound/machines/terminal_insert_disc.ogg', 70)
+	playsound(src, 'sound/machines/terminal/terminal_insert_disc.ogg', 70)
 
 /datum/component/armament/proc/select_armament(mob/user, datum/armament_entry/armament_entry)
 	if(!inserted_card)

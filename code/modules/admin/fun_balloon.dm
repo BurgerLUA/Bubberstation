@@ -55,7 +55,7 @@
 	return data
 
 /obj/effect/fun_balloon/sentience/ui_state(mob/user)
-	return GLOB.admin_state
+	return ADMIN_STATE(R_ADMIN)
 
 /obj/effect/fun_balloon/sentience/ui_status(mob/user, datum/ui_state/state)
 	if(popped)
@@ -64,7 +64,7 @@
 		return UI_INTERACTIVE
 	return ..()
 
-/obj/effect/fun_balloon/sentience/ui_act(action, list/params)
+/obj/effect/fun_balloon/sentience/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
 	if(.)
 		return
@@ -105,13 +105,14 @@
 		alert_pic = src,
 		role_name_text = "sentience fun balloon",
 	)
+
 	while(LAZYLEN(candidates) && LAZYLEN(bodies))
 		var/mob/dead/observer/C = pick_n_take(candidates)
 		var/mob/living/body = pick_n_take(bodies)
 
 		message_admins("[key_name_admin(C)] has taken control of ([key_name_admin(body)])")
 		body.ghostize(FALSE)
-		body.key = C.key
+		body.PossessByPlayer(C.key)
 		if (make_antag)
 			body.mind.add_antag_datum(antag_type)
 			continue

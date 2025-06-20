@@ -47,30 +47,25 @@
 /obj/structure/bed/bdsm_bed/post_buckle_mob(mob/living/affected_mob)
 	density = TRUE
 	//Push them up from the normal lying position
-	affected_mob.pixel_y = affected_mob.base_pixel_y
+	var/y_offset = -1 * PIXEL_Y_OFFSET_LYING
+	affected_mob.add_offsets(type, y_add = y_offset)
 
 /obj/structure/bed/bdsm_bed/post_unbuckle_mob(mob/living/affected_mob)
 	density = FALSE
 	//Set them back down to the normal lying position
-	affected_mob.pixel_y = affected_mob.base_pixel_y + affected_mob.body_position_pixel_y_offset
+	affected_mob.remove_offsets(type)
 
 /obj/structure/bed/bdsm_bed/click_ctrl_shift(mob/user)
-	. = ..()
-	if(. == FALSE)
-		return FALSE
-
 	add_fingerprint(user)
 	to_chat(user, span_notice("You begin unfastening the frame of [src] and deflating the latex pillows..."))
 	if(!do_after(user, 8 SECONDS, src))
 		to_chat(user, span_warning("You fail to disassemble [src]."))
-		return FALSE
+		return
 
 	to_chat(user, span_notice("You disassemble [src]."))
 	var/obj/item/construction_kit/bdsm/bed/created_kit = new
 	created_kit.forceMove(loc)
 	qdel(src)
-
-	return TRUE
 
 /obj/structure/bed/bdsm_bed/Destroy()
 	unbuckle_all_mobs(TRUE)
@@ -242,12 +237,10 @@
 	add_fingerprint(user)
 	update_icon_state()
 	update_icon()
-	play_lewd_sound(loc, 'sound/weapons/magin.ogg', 20, TRUE)
+	conditional_pref_sound(loc, 'sound/items/weapons/magin.ogg', 20, TRUE)
 
 //Place the mob in the desired position after buckling
 /obj/structure/chair/x_stand/post_buckle_mob(mob/living/affected_mob)
-	affected_mob.pixel_y = affected_mob.base_pixel_y
-	affected_mob.pixel_x = affected_mob.base_pixel_x
 	affected_mob.layer = BELOW_MOB_LAYER
 
 	if(LAZYLEN(buckled_mobs))
@@ -270,8 +263,6 @@
 
 //Restore the position of the mob after unbuckling.
 /obj/structure/chair/x_stand/post_unbuckle_mob(mob/living/affected_mob)
-	affected_mob.pixel_x = affected_mob.base_pixel_x + affected_mob.body_position_pixel_x_offset
-	affected_mob.pixel_y = affected_mob.base_pixel_y + affected_mob.body_position_pixel_y_offset
 	affected_mob.layer = initial(affected_mob.layer)
 
 	if(!current_mob)
@@ -289,20 +280,15 @@
 */
 
 /obj/structure/chair/x_stand/click_ctrl_shift(mob/user)
-	. = ..()
-	if(. == FALSE)
-		return FALSE
-
 	add_fingerprint(user)
 	to_chat(user, span_notice("You begin unfastening the frame of [src]..."))
 	if(!do_after(user, 8 SECONDS, src))
-		return FALSE
+		return
 
 	to_chat(user, span_notice("You disassemble [src]."))
 	new /obj/item/construction_kit/bdsm/x_stand(loc)
 	unbuckle_all_mobs()
 	qdel(src)
-	return TRUE
 
 /obj/structure/chair/x_stand/examine(mob/user)
 	. = ..()

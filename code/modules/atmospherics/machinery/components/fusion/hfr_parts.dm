@@ -34,7 +34,7 @@
 	. = ..()
 	. += span_notice("[src] can be rotated by first opening the panel with a screwdriver and then using a wrench on it.")
 
-/obj/machinery/atmospherics/components/unary/hypertorus/attackby(obj/item/I, mob/user, params)
+/obj/machinery/atmospherics/components/unary/hypertorus/attackby(obj/item/I, mob/user, list/modifiers, list/attack_modifiers)
 	if(!fusion_started)
 		if(default_deconstruction_screwdriver(user, icon_state_open, icon_state_off, I))
 			return
@@ -51,7 +51,7 @@
 	if(tool.use_tool(src, user, 10 SECONDS, volume=30))
 		balloon_alert(user, "repaired")
 		cracked = FALSE
-		update_appearance()
+		update_appearance(UPDATE_ICON)
 
 /obj/machinery/atmospherics/components/unary/hypertorus/crowbar_act(mob/living/user, obj/item/tool)
 	return crowbar_deconstruction_act(user, tool)
@@ -79,7 +79,7 @@
 
 /obj/machinery/atmospherics/components/unary/hypertorus/fuel_input
 	name = "HFR fuel input port"
-	desc = "Input port for the Hypertorus Fusion Reactor, designed to take in only Hydrogen and Tritium in gas forms."
+	desc = "Input port for the Hypertorus Fusion Reactor, designed to take in fuels with the optimal fuel mix being a 50/50 split."
 	icon_state = "fuel_input_off"
 	icon_state_open = "fuel_input_open"
 	icon_state_off = "fuel_input_off"
@@ -128,7 +128,7 @@
 	. = ..()
 	. += span_notice("[src] can be rotated by first opening the panel with a screwdriver and then using a wrench on it.")
 
-/obj/machinery/hypertorus/attackby(obj/item/I, mob/user, params)
+/obj/machinery/hypertorus/attackby(obj/item/I, mob/user, list/modifiers, list/attack_modifiers)
 	if(!fusion_started)
 		if(default_deconstruction_screwdriver(user, icon_state_open, icon_state_off, I))
 			return
@@ -313,7 +313,7 @@
 
 	return data
 
-/obj/machinery/hypertorus/interface/ui_act(action, params)
+/obj/machinery/hypertorus/interface/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
 	if(.)
 		return

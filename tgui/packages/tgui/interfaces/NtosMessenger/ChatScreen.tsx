@@ -1,7 +1,4 @@
-import { BooleanLike } from 'common/react';
 import { Component, createRef, RefObject } from 'react';
-
-import { useBackend } from '../../backend';
 import {
   Box,
   Button,
@@ -12,7 +9,10 @@ import {
   Section,
   Stack,
   Tooltip,
-} from '../../components';
+} from 'tgui-core/components';
+import { BooleanLike } from 'tgui-core/react';
+
+import { useBackend } from '../../backend';
 import { NtMessage, NtMessenger, NtPicture } from './types';
 
 type ChatScreenProps = {
@@ -32,6 +32,7 @@ type ChatScreenState = {
   message: string;
   previewingImage?: string;
   selectingPhoto: boolean;
+  subtleMode: boolean; // BUBBER EDIT ADDITION - SUBTLE MESSAGES
 };
 
 const READ_UNREADS_TIME_MS = 1000;
@@ -39,12 +40,13 @@ const SEND_COOLDOWN_MS = 1000;
 
 export class ChatScreen extends Component<ChatScreenProps, ChatScreenState> {
   readUnreadsTimeout: NodeJS.Timeout | null = null;
-  scrollRef: RefObject<HTMLDivElement>;
+  scrollRef: RefObject<HTMLDivElement | null>;
 
   state: ChatScreenState = {
     message: '',
     selectingPhoto: false,
     canSend: true,
+    subtleMode: false, // BUBBER EDIT ADDITION - SUBTLE MESSAGES
   };
 
   constructor(props: ChatScreenProps) {
@@ -59,6 +61,7 @@ export class ChatScreen extends Component<ChatScreenProps, ChatScreenState> {
     this.trySetReadTimeout = this.trySetReadTimeout.bind(this);
     this.tryClearReadTimeout = this.tryClearReadTimeout.bind(this);
     this.clearUnreads = this.clearUnreads.bind(this);
+    this.handleToggleSubtle = this.handleToggleSubtle.bind(this); // BUBBER EDIT ADDITION - SUBTLE MESSAGES
   }
 
   componentDidMount() {
@@ -151,15 +154,24 @@ export class ChatScreen extends Component<ChatScreenProps, ChatScreenState> {
     act('PDA_sendMessage', {
       ref: ref,
       message: this.state.message,
+      subtle: this.state.subtleMode, // BUBBER EDIT ADDITION - SUBTLE MESSAGES
     });
 
     this.setState({ message: '', canSend: false });
     setTimeout(() => this.setState({ canSend: true }), SEND_COOLDOWN_MS);
   }
 
-  handleMessageInput(_: any, val: string) {
+  handleMessageInput(val: string) {
     this.setState({ message: val });
   }
+
+  // BUBBER EDIT ADDITION BEGIN - SUBTLE MESSAGES
+  handleToggleSubtle() {
+    this.setState((state) => ({
+      subtleMode: !state.subtleMode,
+    }));
+  }
+  // BUBBER EDIT ADDITION END - SUBTLE MESSAGES
 
   render() {
     const { act } = useBackend();
@@ -173,9 +185,11 @@ export class ChatScreen extends Component<ChatScreenProps, ChatScreenState> {
       sendingVirus,
       unreads,
     } = this.props;
-    const { message, canSend, previewingImage, selectingPhoto } = this.state;
+    // BUBBER EDIT CHANGE - SUBTLE MESSAGES - Original: const { message, canSend, previewingImage, selectingPhoto } = this.state;
+    const { message, canSend, previewingImage, selectingPhoto, subtleMode } =
+      this.state;
 
-    let filteredMessages: JSX.Element[] = [];
+    let filteredMessages: React.JSX.Element[] = [];
 
     for (let index = 0; index < messages.length; index++) {
       const message = messages[index];
@@ -196,6 +210,7 @@ export class ChatScreen extends Component<ChatScreenProps, ChatScreenState> {
             everyone={message.everyone}
             photoPath={message.photo_path}
             timestamp={message.timestamp}
+            subtle={message.subtle} // BUBBER EDIT ADDITION - SUBTLE MESSAGES
             onPreviewImage={
               message.photo_path
                 ? () => this.setState({ previewingImage: message.photo_path! })
@@ -206,7 +221,7 @@ export class ChatScreen extends Component<ChatScreenProps, ChatScreenState> {
       );
     }
 
-    let sendingBar: JSX.Element;
+    let sendingBar: React.JSX.Element;
 
     if (!canReply) {
       sendingBar = (
@@ -268,6 +283,16 @@ export class ChatScreen extends Component<ChatScreenProps, ChatScreenState> {
       const buttons = canReply ? (
         <>
           <Stack.Item>{attachmentButton}</Stack.Item>
+          {/* BUBBER EDIT ADDITION BEGIN - SUBTLE MESSAGES */}
+          <Stack.Item>
+            <Button
+              tooltip="Toggle subtle mode; messages sent will be hidden from prying eyes."
+              icon={subtleMode ? 'fa-ear-deaf' : 'fa-ear-listen'}
+              backgroundColor={subtleMode ? `hsl(327, 60%, 35%)` : ''}
+              onClick={this.handleToggleSubtle}
+            />
+          </Stack.Item>
+          {/* BUBBER EDIT ADDITION END - SUBTLE MESSAGES */}
           <Stack.Item>
             <Button
               tooltip="Send"
@@ -290,7 +315,6 @@ export class ChatScreen extends Component<ChatScreenProps, ChatScreenState> {
                   pt={1}
                   onClick={() => act('PDA_clearPhoto')}
                   tooltip="Remove attachment"
-                  tooltipPosition="auto-end"
                 >
                   <Image src={selectedPhoto} />
                 </Button>
@@ -298,16 +322,16 @@ export class ChatScreen extends Component<ChatScreenProps, ChatScreenState> {
             )}
             <Stack.Item>
               <Stack fill align="center">
-                <Stack.Item grow={1}>
+                <Stack.Item grow>
                   <Input
                     placeholder={`Send message to ${recipient.name}...`}
                     fluid
                     autoFocus
-                    width="100%"
                     value={message}
                     maxLength={1024}
-                    onInput={this.handleMessageInput}
+                    onChange={this.handleMessageInput}
                     onEnter={this.handleSendMessage}
+                    selfClear
                   />
                 </Stack.Item>
                 {buttons}
@@ -395,18 +419,39 @@ type ChatMessageProps = {
   timestamp: string;
   photoPath?: string;
   onPreviewImage?: () => void;
+  subtle: BooleanLike; // BUBBER EDIT ADDITION - SUBTLE MESSAGES
 };
 
 const ChatMessage = (props: ChatMessageProps) => {
-  const { message, everyone, outgoing, photoPath, timestamp, onPreviewImage } =
-    props;
+  // BUBBER EDIT CHANGE - SUBTLE MESSAGES - Original: const { message, everyone, outgoing, photoPath, timestamp, onPreviewImage } = props;
+  const {
+    message,
+    everyone,
+    outgoing,
+    photoPath,
+    timestamp,
+    onPreviewImage,
+    subtle,
+  } = props;
 
   const messageHTML = {
     __html: `${message}`,
   };
 
   return (
-    <Box className={`NtosChatMessage${outgoing ? '_outgoing' : ''}`}>
+    // BUBBER EDIT CHANGE BEGIN - SUBTLE MESSAGES - Original: <Box className={`NtosChatMessage${outgoing ? '_outgoing' : ''}`}>
+    <Box
+      className={`NtosChatMessage${
+        subtle
+          ? outgoing
+            ? '_subtle_outgoing'
+            : '_subtle'
+          : outgoing
+            ? '_outgoing'
+            : ''
+      }`}
+    >
+      {/* BUBBER EDIT CHANGE END - SUBTLE MESSAGES */}
       <Box className="NtosChatMessage__content">
         <Box as="span" dangerouslySetInnerHTML={messageHTML} />
         <Tooltip content={timestamp} position={outgoing ? 'left' : 'right'}>

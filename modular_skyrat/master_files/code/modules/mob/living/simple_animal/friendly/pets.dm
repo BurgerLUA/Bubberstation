@@ -12,8 +12,8 @@
 	unsuitable_atmos_damage = 0.5
 	butcher_results = list(
 		/obj/item/food/meat/slab = 1,
-		/obj/item/organ/internal/ears/cat = 1,
-		/obj/item/organ/external/tail/cat = 1,
+		/obj/item/organ/ears/cat = 1,
+		/obj/item/organ/tail/cat = 1,
 		/obj/item/clothing/mask/gas/clown_hat = 1,
 
 	)
@@ -66,8 +66,8 @@
 	unsuitable_atmos_damage = 0.5
 	butcher_results = list(
 		/obj/item/food/meat/slab = 1,
-		/obj/item/organ/internal/ears/cat = 1,
-		/obj/item/organ/external/tail/cat = 1,
+		/obj/item/organ/ears/cat = 1,
+		/obj/item/organ/tail/cat = 1,
 		/obj/item/clothing/mask/gas/mime = 1,
 	)
 
@@ -99,8 +99,8 @@
 	unsuitable_atmos_damage = 0.5
 	butcher_results = list(
 		/obj/item/food/meat/slab = 1,
-		/obj/item/organ/internal/ears/cat = 1,
-		/obj/item/organ/external/tail/cat = 1,
+		/obj/item/organ/ears/cat = 1,
+		/obj/item/organ/tail/cat = 1,
 		/obj/item/clothing/head/pelt/tiger = 1,
 	)
 
@@ -147,7 +147,7 @@
 	melee_damage_upper = 5
 	attack_verb_continuous = "bites"
 	attack_verb_simple = "bite"
-	attack_sound = 'sound/weapons/bite.ogg'
+	attack_sound = 'sound/items/weapons/bite.ogg'
 	attack_vis_effect = ATTACK_EFFECT_BITE
 	ai_controller = /datum/ai_controller/basic_controller/fox/docile //he's a nice boy
 

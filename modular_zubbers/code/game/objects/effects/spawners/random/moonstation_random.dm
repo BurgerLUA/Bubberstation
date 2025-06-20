@@ -195,9 +195,9 @@
 	icon_state = "random_vending"
 	loot = list(
 		/obj/machinery/vending/assist = 400,
-		/obj/machinery/vending/autodrobe/all_access = 200,
+		/obj/machinery/vending/autodrobe = 200,
 		/obj/machinery/vending/barbervend = 50,
-		/obj/machinery/vending/boozeomat/all_access = 100,
+		/obj/machinery/vending/boozeomat = 100,
 		/obj/machinery/vending/cigarette = 50,
 		/obj/machinery/vending/cigarette/beach = 25,
 		/obj/machinery/vending/cigarette/syndicate = 10,
@@ -256,7 +256,6 @@
 		/obj/machinery/fax = 1,
 		/obj/machinery/microwave = 10,
 		/obj/machinery/plantgenes = 5,
-		/obj/machinery/pollution_scrubber = 10,
 		/obj/machinery/reagentgrinder = 20,
 		/obj/machinery/recharger = 5,
 		/obj/machinery/smartfridge/disks = 10,
@@ -324,7 +323,7 @@
 		/obj/machinery/stove = 20,
 		/obj/machinery/syndicatebomb/training = 40,
 		/obj/machinery/washing_machine = 100,
-		/obj/structure/altar_of_gods = 5,
+		/obj/structure/altar/of_gods = 5,
 		/obj/structure/aquarium/prefilled = 100,
 		/obj/structure/bonfire/grill_pre_attached = 200,
 		/obj/structure/cannon/trash = 50,

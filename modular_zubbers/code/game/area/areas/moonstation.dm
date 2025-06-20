@@ -63,7 +63,7 @@
 	icon_state = "maintcentral"
 
 /area/station/terminal/maintenance/fore
-	name = "\improper Arrivals Terminal Fore Maintenance"
+	name = "\improper Arrivals Terminal Disposals"
 	icon_state = "maintfore"
 
 /area/station/terminal/maintenance/aft
@@ -88,12 +88,12 @@
 	name = "DO NOT USE"
 	icon = 'icons/area/areas_station.dmi'
 	icon_state = "mining"
-	has_gravity = STANDARD_GRAVITY
+	default_gravity = STANDARD_GRAVITY
 	flags_1 = NONE
 	area_flags = UNIQUE_AREA | FLORA_ALLOWED
 	ambience_index = AMBIENCE_ICEMOON
 	sound_environment = SOUND_AREA_ICEMOON
-	ambient_buzz = 'sound/ambience/magma.ogg'
+	ambient_buzz = 'sound/ambience/lavaland/magma.ogg'
 
 /area/moonstation/surface
 	name = "Lunar Surface"
@@ -165,3 +165,7 @@
 /area/lavaland/underground/unexplored/danger
 	icon_state = "danger"
 	area_flags = VALID_TERRITORY | UNIQUE_AREA | CAVES_ALLOWED | FLORA_ALLOWED | MOB_SPAWN_ALLOWED | MEGAFAUNA_SPAWN_ALLOWED
+
+/area/station/maintenance/department/medical/psychology
+	name = "Psychology Maintenance"
+	icon_state = "unknown"

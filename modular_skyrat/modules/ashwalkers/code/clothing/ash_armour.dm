@@ -132,6 +132,8 @@
 	worn_icon = 'modular_skyrat/modules/ashwalkers/icons/feet.dmi'
 	worn_icon_digi = 'modular_skyrat/modules/ashwalkers/icons/feet_digi.dmi'
 	icon_state = "bone_greaves"
+
+	body_parts_covered = parent_type::body_parts_covered | LEGS
 	supports_variations_flags = CLOTHING_DIGITIGRADE_VARIATION
 	armor_type = /datum/armor/bone_greaves
 
@@ -139,7 +141,7 @@
 	name = "Bone Greaves"
 	result = /obj/item/clothing/shoes/bone_greaves
 	reqs = list(
-   		/obj/item/stack/sheet/bone = 2,
-   		/obj/item/stack/sheet/sinew = 1,
-    )
+		/obj/item/stack/sheet/bone = 2,
+		/obj/item/stack/sheet/sinew = 1,
+	)
 	category = CAT_CLOTHING

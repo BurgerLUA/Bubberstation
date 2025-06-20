@@ -18,7 +18,7 @@
 /obj/structure/cargo_shelf/debug
 	capacity = 12
 
-/obj/structure/cargo_shelf/Initialize()
+/obj/structure/cargo_shelf/Initialize(mapload)
 	. = ..()
 	shelf_contents = new/list(capacity) // Initialize our shelf's contents list, this will be used later.
 	var/stack_layer // This is used to generate the sprite layering of the shelf pieces.
@@ -33,7 +33,9 @@
 	return
 
 /obj/structure/cargo_shelf/Destroy()
-	QDEL_LIST(shelf_contents)
+	for(var/obj/structure/closet/crate/crate in shelf_contents)
+		crate.forceMove(loc)
+	shelf_contents = null
 	return ..()
 
 /obj/structure/cargo_shelf/examine(mob/user)
@@ -124,7 +126,6 @@
 		step(crate, pick(GLOB.alldirs)) // Shuffle the crates around as though they've fallen down.
 		crate.SpinAnimation(rand(4,7), 1) // Spin the crates around a little as they fall. Randomness is applied so it doesn't look weird.
 		switch(pick(1, 1, 1, 1, 2, 2, 3)) // Randomly pick whether to do nothing, open the crate, or break it open.
-			if(1) // Believe it or not, this does nothing.
 			if(2) // Open the crate!
 				if(crate.open()) // Break some open, cause a little chaos.
 					crate.visible_message(span_warning("[crate]'s lid falls open!"))
@@ -146,7 +147,7 @@
 	var/mob/living/user = usr
 //	if(!isliving(user))
 //		return // Ghosts busted.
-//	if(!isturf(user.loc) || user.incapacitated() || user.body_position == LYING_DOWN)
+//	if(!isturf(user.loc) || user.incapacitated || user.body_position == LYING_DOWN)
 //		return // If the user is in a weird state, don't bother trying.
 	if(istype(drop_atom, /turf/open) && istype(loc, /obj/structure/cargo_shelf) && user.Adjacent(drop_atom))
 		var/obj/structure/cargo_shelf/shelf = loc
@@ -231,3 +232,7 @@
 	var/obj/item/rack_parts/shelf/newparts = new(loc)
 	transfer_fingerprints_to(newparts)
 	qdel(src)
+
+#undef DEFAULT_SHELF_CAPACITY
+#undef DEFAULT_SHELF_USE_DELAY
+#undef DEFAULT_SHELF_VERTICAL_OFFSET

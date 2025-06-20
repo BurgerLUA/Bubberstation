@@ -15,16 +15,20 @@
 	object.pixel_x = clamp(text2num(LAZYACCESS(modifiers, ICON_X)) - 16, -(world.icon_size / 3), world.icon_size / 3)
 	object.pixel_y = text2num(LAZYACCESS(modifiers, ICON_Y)) > 16 ? 10 : -4
 
-/obj/structure/rack/wrench_act_secondary(mob/living/user, obj/item/tool)
+/obj/structure/rack/wooden/wrench_act_secondary(mob/living/user, obj/item/tool)
 	return NONE
 
 /obj/structure/rack/wooden/crowbar_act(mob/living/user, obj/item/tool)
 	user.balloon_alert_to_viewers("disassembling...")
 	if(!tool.use_tool(src, user, 2 SECONDS, volume = 100))
 		return
-	new /obj/item/stack/sheet/mineral/wood(drop_location(), 2)
 	deconstruct(TRUE)
 	return ITEM_INTERACT_SUCCESS
+
+/obj/structure/rack/wooden/atom_deconstruct(disassembled = TRUE)
+	set_density(FALSE)
+	var/obj/item/stack/sheet/mineral/wood/planks = new(drop_location(), 2)
+	transfer_fingerprints_to(planks)
 
 // Barrel but it works like a crate
 

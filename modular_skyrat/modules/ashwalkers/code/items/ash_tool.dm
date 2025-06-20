@@ -3,12 +3,14 @@
 	name = "primitive screwdriver"
 	icon = 'modular_skyrat/modules/ashwalkers/icons/ashwalker_tools.dmi'
 	icon_state = "screwdriver"
+	post_init_icon_state = null
+	random_color = FALSE
 
 	greyscale_colors = null
 	greyscale_config = null
 	greyscale_config_inhand_left = null
 	greyscale_config_inhand_right = null
-	greyscale_config_worn = null
+	greyscale_config_belt = null
 
 /datum/crafting_recipe/ash_recipe/ash_screwdriver
 	name = "Ash Screwdriver"
@@ -18,12 +20,13 @@
 	name = "primitive wirecutters"
 	icon = 'modular_skyrat/modules/ashwalkers/icons/ashwalker_tools.dmi'
 	icon_state = "cutters"
+	random_color = FALSE
 
 	greyscale_colors = null
 	greyscale_config = null
 	greyscale_config_inhand_left = null
 	greyscale_config_inhand_right = null
-	greyscale_config_worn = null
+	greyscale_config_belt = null
 
 /datum/crafting_recipe/ash_recipe/ash_cutters
 	name = "Ash Wirecutters"
@@ -104,5 +107,5 @@
 	to_chat(living_user, span_warning("[src] leaps from you satisfied and begins to grossly assemble itself!"))
 	var/type = pick(/obj/structure/spawner/lavaland, /obj/structure/spawner/lavaland/goliath, /obj/structure/spawner/lavaland/legion)
 	new type(user.loc)
-	playsound(get_turf(src), 'sound/magic/demon_attack1.ogg', 50, TRUE)
+	playsound(get_turf(src), 'sound/effects/magic/demon_attack1.ogg', 50, TRUE)
 	qdel(src)

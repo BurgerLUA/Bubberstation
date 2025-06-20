@@ -34,7 +34,7 @@
 
 /obj/item/stack/ore/bluespace_crystal/attack_self(mob/user)
 	user.visible_message(span_warning("[user] begins to crush [src]!"), span_danger("You begin to crush [src]!")) //BUBBERSTATION ADDITION
-	if(!do_after(user, delay = 3 SECONDS)) //BUBBERSTATION ADDITION
+	if(!do_after(user, delay = 1.5 SECONDS)) //BUBBERSTATION ADDITION
 		return //BUBBERSTATION ADDITION
 	user.visible_message(span_warning("[user] crushes [src]!"), span_danger("You crush [src]!"))
 	new /obj/effect/particle_effect/sparks(loc)
@@ -104,3 +104,6 @@
 			to_chat(user, span_notice("You break off a crystal."))
 	else
 		..()
+
+/obj/item/stack/sheet/bluespace_crystal/fifty
+	amount = 50

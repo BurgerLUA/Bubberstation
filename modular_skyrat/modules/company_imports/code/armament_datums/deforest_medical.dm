@@ -11,6 +11,11 @@
 	item_type = /obj/item/storage/medkit/civil_defense/stocked
 	cost = PAYCHECK_COMMAND * 2.5
 
+/datum/armament_entry/company_import/deforest/first_aid_kit/comfort
+	item_type = /obj/item/storage/medkit/civil_defense/comfort/stocked
+	cost = PAYCHECK_COMMAND * 4
+	// bubbah price, not adding it to other stuff because i dont want to mess with the changes... would make adjusting it harder, and that shit is overpriced rn
+
 /datum/armament_entry/company_import/deforest/first_aid_kit/frontier
 	item_type = /obj/item/storage/medkit/frontier/stocked
 	cost = PAYCHECK_COMMAND * 3.5
@@ -77,7 +82,7 @@
 	cost = PAYCHECK_CREW
 
 /datum/armament_entry/company_import/deforest/first_aid/robo_patch
-	item_type = /obj/item/reagent_containers/pill/robotic_patch/synth_repair
+	item_type = /obj/item/reagent_containers/applicator/pill/robotic_patch/synth_repair
 	cost = PAYCHECK_CREW
 
 /datum/armament_entry/company_import/deforest/first_aid/bandaid
@@ -196,11 +201,7 @@
 /datum/armament_entry/company_import/deforest/equipment/loaded_belt_defib
 	item_type = /obj/item/defibrillator/compact/loaded
 	cost = PAYCHECK_COMMAND*2
-/* BUBBER EDIT START - OBVIOUSLY WE ARE NOT ADDING THIS
-/datum/armament_entry/company_import/deforest/equipment/loaded_belt_defib2
-	item_type = /obj/item/defibrillator/compact/combat/loaded/nanotrasen
-	cost = PAYCHECK_COMMAND*8
-BUBBER EDIT END*/
+
 /datum/armament_entry/company_import/deforest/equipment/surgical_tools
 	item_type = /obj/item/surgery_tray/full
 	cost = PAYCHECK_COMMAND
@@ -225,6 +226,10 @@ BUBBER EDIT END*/
 	item_type = /obj/item/cautery/advanced
 	cost = PAYCHECK_COMMAND * 3
 
+/datum/armament_entry/company_import/deforest/equipment/advanced_blood_filter
+	item_type = /obj/item/blood_filter/advanced
+	cost = PAYCHECK_COMMAND * 9
+
 /datum/armament_entry/company_import/deforest/equipment/medigun_upgrade
 	item_type = /obj/item/device/custom_kit/medigun_fastcharge
 	cost = PAYCHECK_COMMAND * 2
@@ -232,6 +237,10 @@ BUBBER EDIT END*/
 /datum/armament_entry/company_import/deforest/equipment/hypospray_upgrade
 	item_type = /obj/item/device/custom_kit/deluxe_hypo2
 	cost = PAYCHECK_COMMAND * 2
+
+/datum/armament_entry/company_import/deforest/equipment/advanced_hypospray
+	item_type = /obj/item/hypospray/mkii/piercing
+	cost = PAYCHECK_COMMAND * 7
 
 /datum/armament_entry/company_import/deforest/equipment/afad
 	item_type = /obj/item/gun/medbeam/afad
@@ -252,7 +261,7 @@ BUBBER EDIT END*/
 /datum/armament_entry/company_import/deforest/equipment/medhud_night_sci
 	item_type = /obj/item/clothing/glasses/hud/health/night/science
 	cost = PAYCHECK_COMMAND * 6
-//BUBBER EDIT ADD START
+
 /datum/armament_entry/company_import/deforest/equipment/hypospray_case
 	item_type = /obj/item/storage/hypospraykit
 	cost = PAYCHECK_LOWER * 2
@@ -267,22 +276,20 @@ BUBBER EDIT END*/
 	subcategory = "Cybernetics"
 
 /datum/armament_entry/company_import/deforest/implant/surgery
-	item_type = /obj/item/organ/internal/cyberimp/arm/surgery
+	item_type = /obj/item/organ/cyberimp/arm/toolkit/surgery
 	cost = PAYCHECK_COMMAND * 5
 
 /datum/armament_entry/company_import/deforest/implant/toolset
-	item_type = /obj/item/organ/internal/cyberimp/arm/toolset
+	item_type = /obj/item/organ/cyberimp/arm/toolkit/toolset
 	cost = PAYCHECK_COMMAND * 5
 
 /datum/armament_entry/company_import/deforest/implant/botany
-	item_type = /obj/item/organ/internal/cyberimp/arm/botany
+	item_type = /obj/item/organ/cyberimp/arm/toolkit/botany
 	cost = PAYCHECK_COMMAND * 5
 
 /datum/armament_entry/company_import/deforest/implant/janitor
-	item_type = /obj/item/organ/internal/cyberimp/arm/janitor
+	item_type = /obj/item/organ/cyberimp/arm/toolkit/janitor
 	cost = PAYCHECK_COMMAND * 5
-
-//BUBBER EDIT END
 
 // Modsuit Modules from the medical category, here instead of in Nakamura because nobody buys from this company
 

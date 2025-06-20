@@ -19,13 +19,13 @@
 /obj/item/circular_saw/field_medic
 	name = "bone saw"
 	desc = "Did that sting? SAW-ry!"
-	force = 20
+	force = 15
 	icon_state = "bonesaw"
 	icon = 'modular_skyrat/modules/exp_corps/icons/bonesaw.dmi'
 	lefthand_file = 'modular_skyrat/modules/exp_corps/icons/bonesaw_l.dmi'
 	righthand_file = 'modular_skyrat/modules/exp_corps/icons/bonesaw_r.dmi'
 	inhand_icon_state = "bonesaw"
-	hitsound = 'sound/weapons/bladeslice.ogg'
+	hitsound = 'sound/items/weapons/bladeslice.ogg'
 	toolspeed = 2
 	throw_range = 3
 	w_class = WEIGHT_CLASS_SMALL
@@ -48,7 +48,7 @@
 	attack_verb_simple = list("shove", "bash")
 	transparent = TRUE
 	max_integrity = 200
-	shield_break_sound = 'sound/effects/glassbr3.ogg'
+	shield_break_sound = 'sound/effects/glass/glassbr3.ogg'
 	shield_break_leftover = /obj/item/pointman_broken
 	var/repairable_by = /obj/item/stack/sheet/plasteel //what to repair the shield with
 

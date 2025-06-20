@@ -75,12 +75,11 @@
 	recharge_speed = 0
 	repairs = 0
 	for(var/datum/stock_part/capacitor/capacitor in component_parts)
-		recharge_speed += (capacitor.tier * STANDARD_CELL_CHARGE * 0.1)
+		recharge_speed += 5e-3 * capacitor.tier
 	for(var/datum/stock_part/servo/servo in component_parts)
 		repairs += servo.tier - 1
 	for(var/obj/item/stock_parts/power_store/cell in component_parts)
 		recharge_speed *= cell.maxcharge
-	recharge_speed *= 4 //SKYRAT EDIT ADDITION
 
 /obj/machinery/recharge_station/examine(mob/user)
 	. = ..()
@@ -110,7 +109,7 @@
 		if (!(. & EMP_PROTECT_SELF))
 			open_machine()
 
-/obj/machinery/recharge_station/attackby(obj/item/P, mob/user, params)
+/obj/machinery/recharge_station/attackby(obj/item/P, mob/user, list/modifiers, list/attack_modifiers)
 	if(state_open)
 		if(default_deconstruction_screwdriver(user, "borgdecon2", "borgcharger0", P))
 			return

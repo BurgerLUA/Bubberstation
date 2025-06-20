@@ -22,6 +22,8 @@
 /// Standard size (ie: normal runechat) - Size options: 6pt 12pt 18pt.
 #define MAPTEXT_GRAND9K(text) {"<span style='font-family: \"Grand9K Pixel\"; font-size: 6pt; -dm-text-outline: 1px black'>[##text]</span>"}
 
+#define MAPTEXT_SELAWIK(text) {"<span style='font-family: \"Selawik\"; font-size: 14pt'>[##text]</span>"} // BUBBER EDIT ADDITION
+
 /// Small size. (ie: context subtooltips, spell delays) - Size options: 12pt 24pt.
 #define MAPTEXT_TINY_UNICODE(text) {"<span style='font-family: \"TinyUnicode\"; font-size: 12pt; line-height: 0.75; -dm-text-outline: 1px black'>[##text]</span>"}
 
@@ -96,7 +98,7 @@
 #define BONE_SCAR_FILE "wounds/bone_scar_desc.json"
 // SKYRAT EDIT ADDITION BEGIN - SYNTH WOUNDS
 /// File location for metalic wound descriptions
-#define METAL_SCAR_FILE "wounds/metal_scar_desc.json" 
+#define METAL_SCAR_FILE "wounds/metal_scar_desc.json"
 // SKYRAT EDIT ADDITION END
 /// File location for scar wound descriptions
 #define SCAR_LOC_FILE "wounds/scar_loc.json"
@@ -116,3 +118,7 @@
 #define SPLASH_FILE "splashes.json"
 ///File location for mother hallucination lines
 #define MOTHER_FILE "mother.json"
+
+#define ALPHABET list("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z")
+#define VOWELS list("a", "e", "i", "o", "u")
+#define CONSONANTS (ALPHABET - VOWELS)

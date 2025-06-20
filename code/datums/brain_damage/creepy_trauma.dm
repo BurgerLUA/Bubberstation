@@ -22,14 +22,17 @@
 		obsession = find_obsession()
 		if(!obsession)//we didn't find one
 			lose_text = ""
-			qdel(src)
-			return
+			return FALSE
+	// BUBBER EDIT ADDITION BEGIN - Antag banned can't roll obsessed
+	if(is_banned_from(owner.ckey, list(ROLE_SYNDICATE, BAN_ANTAGONIST)))
+		return FALSE
+	// BUBBER EDIT ADDITION END - Antag banned can't roll obsessed
 	gain_text = span_warning("You hear a sickening, raspy voice in your head. It wants one small task of you...")
 	owner.mind.add_antag_datum(/datum/antagonist/obsessed)
 	antagonist = owner.mind.has_antag_datum(/datum/antagonist/obsessed)
 	antagonist.trauma = src
 	RegisterSignal(obsession, COMSIG_MOB_EYECONTACT, PROC_REF(stare))
-	..()
+	. = ..()
 	//antag stuff//
 	antagonist.forge_objectives(obsession.mind)
 	antagonist.greet()
@@ -66,7 +69,8 @@
 
 /datum/brain_trauma/special/obsessed/on_lose()
 	..()
-	owner.mind.remove_antag_datum(/datum/antagonist/obsessed)
+	if (owner.mind.remove_antag_datum(/datum/antagonist/obsessed))
+		owner.mind.add_antag_datum(/datum/antagonist/former_obsessed)
 	owner.clear_mood_event("creeping")
 	if(obsession)
 		log_game("[key_name(owner)] is no longer obsessed with [key_name(obsession)].")

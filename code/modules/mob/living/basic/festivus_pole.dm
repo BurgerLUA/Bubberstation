@@ -13,6 +13,7 @@
 	gender = NEUTER
 	gold_core_spawnable = HOSTILE_SPAWN
 	basic_mob_flags = DEL_ON_DEATH
+	status_flags = CANPUSH
 
 	response_help_continuous = "rubs"
 	response_help_simple = "rub"
@@ -30,7 +31,7 @@
 	melee_damage_upper = 12
 	attack_verb_continuous = "bites"
 	attack_verb_simple = "bite"
-	attack_sound = 'sound/weapons/bite.ogg'
+	attack_sound = 'sound/items/weapons/bite.ogg'
 	attack_vis_effect = ATTACK_EFFECT_BITE
 
 	faction = list(FACTION_HOSTILE)
@@ -38,6 +39,7 @@
 
 	death_message = "is hacked into pieces!"
 
+	damage_coeff = list(BRUTE = 1, BURN = 1, TOX = 1, STAMINA = 0, OXY = 1)
 	ai_controller = /datum/ai_controller/basic_controller/festivus_pole
 
 /mob/living/basic/festivus/Initialize(mapload)

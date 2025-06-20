@@ -524,6 +524,12 @@
 	name = "Face Scarf (Worn, Muzzled)"
 	icon_file = 'modular_skyrat/modules/GAGS/icons/neck/face_scarf/face_scarf_worn_muzzled.dmi'
 
+//REGULAR SCARF
+/datum/greyscale_config/scarf/worn/teshari
+	name = "Scarf (Worn, Teshari)"
+	icon_file = 'modular_skyrat/modules/GAGS/icons/neck/neck_teshari.dmi'
+
+
 /*
 *	SUITS
 */
@@ -548,6 +554,12 @@
 /datum/greyscale_config/apron/worn/oldvox
 	icon_file = 'modular_skyrat/modules/GAGS/icons/suit/suit_oldvox.dmi'
 
+// Labcoat
+
+/datum/greyscale_config/labcoat/worn/teshari
+	name = "Labcoat (Worn, Teshari)"
+	icon_file = 'modular_skyrat/modules/GAGS/icons/labcoat_teshari.dmi'
+
 //Flannel Shirt
 
 /datum/greyscale_config/flannelgags
@@ -560,6 +572,10 @@
 	icon_file = 'modular_skyrat/modules/GAGS/icons/suit.dmi'
 	json_config = 'modular_skyrat/modules/GAGS/json_configs/flannel/flannel_worn.json'
 
+//SUSPENDERS
+
+/datum/greyscale_config/suspenders/worn/teshari
+	icon_file = 'modular_skyrat/modules/GAGS/icons/suit/suit_teshari.dmi'
 
 // ARMOR
 
@@ -1204,7 +1220,7 @@ TREK
 /datum/greyscale_config/sneakers/worn/teshari
 	name = "Sneakers (Worn, Teshari)"
 	icon_file = 'modular_skyrat/modules/GAGS/icons/sneakers_teshari.dmi'
-digi
+
 /datum/greyscale_config/sneakers_orange/worn/teshari
 	name = "Orange Sneakers (Worn, Teshari)"
 	icon_file = 'modular_skyrat/modules/GAGS/icons/sneakers_teshari.dmi'
@@ -1388,6 +1404,22 @@ digi
 	name = "Teshari Coat"
 	json_config = 'modular_skyrat/modules/GAGS/json_configs/teshari_fallbacks/coat.json'
 
+/datum/greyscale_config/teshari/thickrobe
+	name = "Teshari Thick Robe"
+	json_config = 'modular_skyrat/modules/GAGS/json_configs/teshari_fallbacks/thickrobe.json'
+
+/datum/greyscale_config/teshari/thickrobe/wiz
+	name = "Teshari Wizard Robe"
+	json_config = 'modular_skyrat/modules/GAGS/json_configs/teshari_fallbacks/wizrobe.json'
+
+/datum/greyscale_config/teshari/thickrobe/jacket
+	name = "Teshari Jacket"
+	json_config = 'modular_skyrat/modules/GAGS/json_configs/teshari_fallbacks/jacket.json'
+
+/datum/greyscale_config/teshari/thickrobe/longcoat
+	name = "Teshari Longcoat"
+	json_config = 'modular_skyrat/modules/GAGS/json_configs/teshari_fallbacks/longcoat.json'
+
 /datum/greyscale_config/teshari/armor
 	name = "Teshari Armor"
 	json_config = 'modular_skyrat/modules/GAGS/json_configs/teshari_fallbacks/armor.json'
@@ -1403,6 +1435,10 @@ digi
 /datum/greyscale_config/teshari/cloak
 	name = "Teshari Cloak"
 	json_config = 'modular_skyrat/modules/GAGS/json_configs/teshari_fallbacks/cloak.json'
+
+/datum/greyscale_config/teshari/mantle
+	name = "Teshari Mantle"
+	json_config = 'modular_skyrat/modules/GAGS/json_configs/teshari_fallbacks/mantle.json'
 
 /datum/greyscale_config/teshari/tie
 	name = "Teshari Tie"
@@ -1551,3 +1587,16 @@ digi
 /datum/greyscale_config/primitive_catgirl_gauntlets/worn
 	name = "Gauntlets (Worn)"
 	json_config = 'modular_skyrat/modules/GAGS/json_configs/primitive_catgirl_clothing/gauntlets_worn.json'
+
+/*
+*	DONKSOFT TURRET
+*/
+
+/datum/greyscale_config/turret
+	name = "Donksoft Turret (Deployed)"
+	icon_file = 'modular_skyrat/modules/magfed_turret/icons/turrets/cargo.dmi'
+	json_config = 'modular_skyrat/modules/GAGS/json_configs/turret/turret.json'
+
+/datum/greyscale_config/turret/toolbox
+	name = "Donksoft Turret"
+	json_config = 'modular_skyrat/modules/GAGS/json_configs/turret/turret_toolbox.json'

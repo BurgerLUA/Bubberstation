@@ -10,7 +10,7 @@ import {
   Section,
   Stack,
   Tabs,
-} from 'tgui/components';
+} from 'tgui-core/components';
 
 import { JOB2ICON } from '../common/JobToIcon';
 import { isRecordMatch } from '../SecurityRecords/helpers';
@@ -19,8 +19,7 @@ import { MedicalRecord, MedicalRecordData } from './types';
 /** Displays all found records. */
 export const MedicalRecordTabs = (props) => {
   const { act, data } = useBackend<MedicalRecordData>();
-  const { records = [] } = data;
-
+  const { records = [], station_z } = data;
   const errorMessage = !records.length
     ? 'No records found.'
     : 'No match. Refine your search.';
@@ -37,8 +36,9 @@ export const MedicalRecordTabs = (props) => {
       <Stack.Item>
         <Input
           fluid
-          onInput={(_, value) => setSearch(value)}
+          onChange={setSearch}
           placeholder="Name/Job/DNA"
+          expensive
         />
       </Stack.Item>
       <Stack.Item grow>
@@ -69,6 +69,7 @@ export const MedicalRecordTabs = (props) => {
             <Button.Confirm
               content="Purge"
               icon="trash"
+              disabled={!station_z}
               onClick={() => act('purge_records')}
               tooltip="Wipe all record data."
             />
@@ -95,6 +96,19 @@ const CrewTab = (props: { record: MedicalRecord }) => {
     if (selectedRecord?.crew_ref === crew_ref) {
       setSelectedRecord(undefined);
     } else {
+      // GOD, I REALLY HATE IT!
+      // THIS FUCKING HACK NEEDED CAUSE "WINSET MAP"
+      // MAKING UI DISAPPEAR, AND WE NEED RE-RENDER SHIT
+      // AFTER BYOND DONE MAKING THEIR SHIT
+      // Anyway... that's better than hack before
+      if (selectedRecord === undefined) {
+        setTimeout(() => {
+          act('view_record', {
+            assigned_view: assigned_view,
+            crew_ref: crew_ref,
+          });
+        });
+      }
       setSelectedRecord(record);
       act('view_record', { assigned_view: assigned_view, crew_ref: crew_ref });
     }

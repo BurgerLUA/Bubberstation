@@ -37,7 +37,7 @@
 	melee_damage_upper = 20
 
 	attack_vis_effect = ATTACK_EFFECT_MECHTOXIN
-	attack_sound = 'sound/weapons/pierce_slow.ogg'
+	attack_sound = 'sound/items/weapons/pierce_slow.ogg'
 	attack_verb_continuous = "stings"
 	attack_verb_simple = "sting"
 
@@ -49,7 +49,7 @@
 	move_resist = MOVE_FORCE_STRONG
 	pull_force = MOVE_FORCE_STRONG
 
-	ai_controller = /datum/ai_controller/basic_controller/simple_hostile
+	ai_controller = /datum/ai_controller/basic_controller/simple/simple_hostile
 
 	butcher_results = list(/obj/item/reagent_containers/cup/tube/scorpion_venom = 1)
 	guaranteed_butcher_results = list(/obj/item/food/meat/slab/bugmeat = 4)

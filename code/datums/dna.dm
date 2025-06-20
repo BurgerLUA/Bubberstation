@@ -17,16 +17,6 @@ GLOBAL_LIST_INIT(identity_block_lengths, list(
 	))
 
 /**
- * The same rules of the above also apply here, with the exception that this is for the unique_features string variable
- * (commonly abbreviated with uf) and its blocks. Both ui and uf have a standard block length of 3 ASCII characters.
- */
-GLOBAL_LIST_INIT(features_block_lengths, list(
-		"[DNA_MUTANT_COLOR_BLOCK]" = DNA_BLOCK_SIZE_COLOR,
-		"[DNA_ETHEREAL_COLOR_BLOCK]" = DNA_BLOCK_SIZE_COLOR,
-	))
-
-/**
-
  * Some identity blocks (basically pieces of the unique_identity string variable of the dna datum, commonly abbreviated with ui)
  * may have a length that differ from standard length of 3 ASCII characters. This list is necessary
  * for these non-standard blocks to work, as well as the entire unique identity string.
@@ -58,7 +48,11 @@ GLOBAL_LIST_INIT(features_block_lengths, list(
  * Commonly used by the datum/dna/set_uni_identity_block and datum/dna/get_uni_identity_block procs.
  */
 GLOBAL_LIST_INIT(total_ui_len_by_block, populate_total_ui_len_by_block())
+*/
 
+GLOBAL_LIST_INIT(standard_mutation_sources, list(MUTATION_SOURCE_ACTIVATED, MUTATION_SOURCE_MUTATOR, MUTATION_SOURCE_TIMED_INJECTOR))
+
+/*
 /proc/populate_total_ui_len_by_block()
 	. = list()
 	var/total_block_len = 1
@@ -83,7 +77,8 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 	var/unique_enzymes
 	///Stores the hashed values of traits such as skin tones, hair style, and gender
 	var/unique_identity
-	var/blood_type
+	///The blood type datum, usually a singleton
+	var/datum/blood_type/blood_type
 	///The type of mutant race the player is if applicable (i.e. potato-man)
 	var/datum/species/species = new /datum/species/human
 	/// Assoc list of feature keys to their value
@@ -91,7 +86,7 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 	var/list/features = list("mcolor" = COLOR_WHITE)
 	///Stores the hashed values of the person's non-human features
 	var/unique_features
-	///Stores the real name of the person who originally got this dna datum. Used primarely for changelings,
+	///Stores the real name of the person who originally got this dna datum. Used primarily for changelings
 	var/real_name
 	///All mutations are from now on here
 	var/list/mutations = list()
@@ -105,7 +100,7 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 	///List of the default genes from this mutation to allow DNA Scanner highlighting
 	var/default_mutation_genes[DNA_MUTATION_BLOCKS]
 	var/stability = 100
-	///Did we take something like mutagen? In that case we cant get our genes scanned to instantly cheese all the powers.
+	///Did we take something like mutagen? In that case we can't get our genes scanned to instantly cheese all the powers.
 	var/scrambled = FALSE
 	/// Weighted list of nonlethal meltdowns
 	var/static/list/nonfatal_meltdowns = list()
@@ -117,11 +112,12 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 		holder = new_holder
 
 /datum/dna/Destroy()
-	if(iscarbon(holder))
-		var/mob/living/carbon/cholder = holder
-		remove_all_mutations() // mutations hold a reference to the dna
-		if(cholder.dna == src)
-			cholder.dna = null
+	if (iscarbon(holder))
+		var/mob/living/carbon/as_carbon = holder
+		for(var/datum/mutation/mutation as anything in mutations)
+			remove_mutation(mutation, mutation.sources) // mutations hold a reference to the dna, we need to delete them.
+		if(as_carbon.dna == src)
+			as_carbon.dna = null
 	holder = null
 
 	QDEL_NULL(species)
@@ -132,36 +128,16 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 
 	return ..()
 
-/datum/dna/proc/transfer_identity(mob/living/carbon/destination, transfer_SE = FALSE, transfer_species = TRUE)
-	if(!istype(destination))
-		return
-	destination.dna.unique_enzymes = unique_enzymes
-	destination.dna.unique_identity = unique_identity
-	destination.dna.blood_type = blood_type
-	destination.dna.unique_features = unique_features
-	destination.dna.features = features.Copy()
-	destination.dna.real_name = real_name
-	destination.dna.temporary_mutations = temporary_mutations.Copy()
-	//SKYRAT EDIT ADDITION BEGIN - CUSTOMIZATION
-	destination.dna.mutant_bodyparts = mutant_bodyparts.Copy()
-	destination.dna.body_markings = body_markings.Copy()
-	destination.dna.update_body_size()
-	//SKYRAT EDIT ADDITION END
-	if(transfer_SE)
-		destination.dna.mutation_index = mutation_index
-		destination.dna.default_mutation_genes = default_mutation_genes
-	if(transfer_species)
-		//destination.set_species(species.type, icon_update=0) - ORIGINAL
-		destination.set_species(species.type, TRUE, FALSE, features.Copy(), mutant_bodyparts.Copy(), body_markings.Copy()) //SKYRAT EDIT CHANGE - CUSTOMIZATION
-
-/datum/dna/proc/copy_dna(datum/dna/new_dna)
+///Copies the variables of a dna datum onto another.
+/datum/dna/proc/copy_dna(datum/dna/new_dna, transfer_flags = COPY_DNA_SE|COPY_DNA_SPECIES)
 	new_dna.unique_enzymes = unique_enzymes
-	new_dna.mutation_index = mutation_index
-	new_dna.default_mutation_genes = default_mutation_genes
 	new_dna.unique_identity = unique_identity
 	new_dna.unique_features = unique_features
-	new_dna.blood_type = blood_type
 	new_dna.features = features.Copy()
+	new_dna.real_name = real_name
+	new_dna.temporary_mutations = temporary_mutations.Copy()
+	new_dna.mutation_index = mutation_index
+	new_dna.default_mutation_genes = default_mutation_genes
 	//SKYRAT EDIT ADDITION BEGIN - CUSTOMIZATION
 	new_dna.mutant_bodyparts = mutant_bodyparts.Copy()
 	new_dna.body_markings = body_markings.Copy()
@@ -169,43 +145,94 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 	//SKYRAT EDIT ADDITION END
 	//if the new DNA has a holder, transform them immediately, otherwise save it
 	if(new_dna.holder)
-		new_dna.holder.set_species(species.type, icon_update = 0)
+		if (iscarbon(new_dna.holder))
+			var/mob/living/carbon/as_carbon = new_dna.holder
+			as_carbon.set_blood_type(blood_type)
+		if(transfer_flags & COPY_DNA_SPECIES)
+			new_dna.holder.set_species(species.type, icon_update = FALSE)
 	else
-		new_dna.species = new species.type
-	new_dna.real_name = real_name
-	// Mutations aren't gc managed, but they still aren't templates
-	// Let's do a proper copy
-	for(var/datum/mutation/human/mutation in mutations)
-		new_dna.add_mutation(mutation, mutation.class, mutation.timeout)
+		new_dna.blood_type = blood_type
+		if(transfer_flags & COPY_DNA_SPECIES)
+			new_dna.species = new species.type
+	if(transfer_flags & COPY_DNA_MUTATIONS && holder?.can_mutate())
+		// Mutations aren't gc managed, but they still aren't templates
+		// Let's do a proper copy
+		for(var/datum/mutation/mutation in mutations)
+			var/list/valid_sources = mutation.sources & GLOB.standard_mutation_sources
+			if(!length(valid_sources))
+				continue
+			new_dna.add_mutation(mutation, valid_sources)
 
-//See mutation.dm for what 'class' does. 'time' is time till it removes itself in decimals. 0 for no timer
-/datum/dna/proc/add_mutation(mutation, class = MUT_OTHER, time)
-	var/mutation_type = mutation
-	if(istype(mutation, /datum/mutation/human))
-		var/datum/mutation/human/HM = mutation
-		mutation_type = HM.type
-	if(get_mutation(mutation_type))
+///Adds a mutation to the dna if possible. See defines/dna.dm for all sources.
+/datum/dna/proc/add_mutation(mutation_to_add, list/sources)
+	if(!islist(sources))
+		if(!sources)
+			CRASH("add_mutation() called without set source(s)")
+		sources = list(sources)
+
+	var/datum/mutation/actual_mutation = get_mutation(mutation_to_add)
+	var/list/sources_to_add = sources.Copy() //make sure not to modify the original if it's stored in a variable outside this proc
+	if(!actual_mutation)
+		if(istype(mutation_to_add, /datum/mutation))
+			var/datum/mutation/mutation_instance = mutation_to_add
+			actual_mutation = mutation_instance.make_copy()
+		else
+			actual_mutation = new mutation_to_add
+		SEND_SIGNAL(holder, COMSIG_CARBON_GAIN_MUTATION, actual_mutation.type, sources_to_add)
+	else
+		sources_to_add -= actual_mutation.sources
+		if(!length(sources_to_add)) //no new sources to add, don't do anything.
+			return
+
+	if(!length(actual_mutation.sources))
+		if(!actual_mutation.on_acquiring(holder))
+			qdel(actual_mutation)
+			return
+		actual_mutation.setup()
+
+	actual_mutation.sources |= sources
+
+	if(MUTATION_SOURCE_ACTIVATED in sources)
+		set_se(1, actual_mutation)
+
+	update_instability()
+
+/datum/dna/proc/remove_mutation(mutation_to_remove, list/sources)
+	if(!islist(sources))
+		if(!sources)
+			CRASH("remove_mutation() called without set source(s)")
+		sources = list(sources)
+
+	var/datum/mutation/actual_mutation = get_mutation(mutation_to_remove)
+
+	if(!actual_mutation || !(sources & actual_mutation.sources))
 		return
-	SEND_SIGNAL(holder, COMSIG_CARBON_GAIN_MUTATION, mutation_type, class)
-	return force_give(new mutation_type (class, time, copymut = mutation))
 
-/datum/dna/proc/remove_mutation(mutation_type)
-	SEND_SIGNAL(holder, COMSIG_CARBON_LOSE_MUTATION, mutation_type)
-	return force_lose(get_mutation(mutation_type))
+	actual_mutation.sources -= sources
+
+	if(MUTATION_SOURCE_ACTIVATED in sources)
+		set_se(0, actual_mutation)
+
+	// Check that it exists first before trying to remove it with mutadone
+	if(!length(actual_mutation.sources))
+		SEND_SIGNAL(holder, COMSIG_CARBON_LOSE_MUTATION, actual_mutation.type)
+		actual_mutation.on_losing(holder)
+		qdel(actual_mutation)
+
+	update_instability(FALSE)
 
 /datum/dna/proc/check_mutation(mutation_type)
 	return get_mutation(mutation_type)
 
-/datum/dna/proc/remove_all_mutations(list/classes = list(MUT_NORMAL, MUT_EXTRA, MUT_OTHER), mutadone = FALSE)
-	remove_mutation_group(mutations, classes, mutadone)
+/datum/dna/proc/remove_all_mutations(sources = GLOB.standard_mutation_sources)
+	remove_mutation_group(mutations, sources)
 	scrambled = FALSE
 
-/datum/dna/proc/remove_mutation_group(list/group, list/classes = list(MUT_NORMAL, MUT_EXTRA, MUT_OTHER), mutadone = FALSE)
+/datum/dna/proc/remove_mutation_group(list/group, sources = GLOB.standard_mutation_sources)
 	if(!group)
 		return
-	for(var/datum/mutation/human/HM in group)
-		if((HM.class in classes) && !(HM.mutadone_proof && mutadone))
-			remove_mutation(HM)
+	for(var/mutation in group)
+		remove_mutation(mutation, sources)
 
 /datum/dna/proc/generate_unique_identity()
 	. = ""
@@ -254,7 +281,7 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 	if(features["lizard_markings"])
 		L[DNA_LIZARD_MARKINGS_BLOCK] = construct_block(SSaccessories.lizard_markings_list.Find(features["lizard_markings"]), length(SSaccessories.lizard_markings_list))
 	if(features["tail_cat"])
-		L[DNA_TAIL_BLOCK] = construct_block(SSaccessories.tails_list_human.Find(features["tail_cat"]), length(SSaccessories.tails_list_human))
+		L[DNA_TAIL_BLOCK] = construct_block(SSaccessories.tails_list_felinid.Find(features["tail_cat"]), length(SSaccessories.tails_list_felinid))
 	if(features["tail_lizard"])
 		L[DNA_LIZARD_TAIL_BLOCK] = construct_block(SSaccessories.tails_list_lizard.Find(features["tail_lizard"]), length(SSaccessories.tails_list_lizard))
 	if(features["snout"])
@@ -277,11 +304,11 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 		L[DNA_MUSHROOM_CAPS_BLOCK] = construct_block(SSaccessories.caps_list.Find(features["caps"]), length(SSaccessories.caps_list))
 	if(features["pod_hair"])
 		L[DNA_POD_HAIR_BLOCK] = construct_block(SSaccessories.pod_hair_list.Find(features["pod_hair"]), length(SSaccessories.pod_hair_list))
+	if(features["fish_tail"])
+		L[DNA_FISH_TAIL_BLOCK] = construct_block(SSaccessories.tails_list_fish.Find(features["fish_tail"]), length(SSaccessories.tails_list_fish))
 
 	for(var/blocknum in 1 to DNA_FEATURE_BLOCKS)
 		. += L[blocknum] || random_string(GET_UI_BLOCK_LEN(blocknum), GLOB.hex_characters)
-
-	return data.Join()
 */
 //SKYRAT EDIT REMOVAL END
 
@@ -295,10 +322,10 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 	mutation_index.Cut()
 	default_mutation_genes.Cut()
 	shuffle_inplace(mutations_temp)
-	mutation_index[/datum/mutation/human/race] = create_sequence(/datum/mutation/human/race, FALSE)
-	default_mutation_genes[/datum/mutation/human/race] = mutation_index[/datum/mutation/human/race]
+	mutation_index[/datum/mutation/race] = create_sequence(/datum/mutation/race, FALSE)
+	default_mutation_genes[/datum/mutation/race] = mutation_index[/datum/mutation/race]
 	for(var/i in 2 to DNA_MUTATION_BLOCKS)
-		var/datum/mutation/human/M = mutations_temp[i]
+		var/datum/mutation/M = mutations_temp[i]
 		mutation_index[M.type] = create_sequence(M.type, FALSE, M.difficulty)
 		default_mutation_genes[M.type] = mutation_index[M.type]
 	shuffle_inplace(mutation_index)
@@ -314,7 +341,7 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 //Used to create a chipped gene sequence
 /proc/create_sequence(mutation, active, difficulty)
 	if(!difficulty)
-		var/datum/mutation/human/A = GET_INITIALIZED_MUTATION(mutation) //leaves the possibility to change difficulty mid-round
+		var/datum/mutation/A = GET_INITIALIZED_MUTATION(mutation) //leaves the possibility to change difficulty mid-round
 		if(!A)
 			return
 		difficulty = A.difficulty
@@ -404,7 +431,7 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 		if(DNA_LIZARD_MARKINGS_BLOCK)
 			set_uni_feature_block(blocknumber, construct_block(SSaccessories.lizard_markings_list.Find(features["lizard_markings"]), length(SSaccessories.lizard_markings_list)))
 		if(DNA_TAIL_BLOCK)
-			set_uni_feature_block(blocknumber, construct_block(SSaccessories.tails_list_human.Find(features["tail_cat"]), length(SSaccessories.tails_list_human)))
+			set_uni_feature_block(blocknumber, construct_block(SSaccessories.tails_list_felinid.Find(features["tail_cat"]), length(SSaccessories.tails_list_felinid)))
 		if(DNA_LIZARD_TAIL_BLOCK)
 			set_uni_feature_block(blocknumber, construct_block(SSaccessories.tails_list_lizard.Find(features["tail_lizard"]), length(SSaccessories.tails_list_lizard)))
 		if(DNA_SNOUT_BLOCK)
@@ -427,28 +454,10 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 			set_uni_feature_block(blocknumber, construct_block(SSaccessories.caps_list.Find(features["caps"]), length(SSaccessories.caps_list)))
 		if(DNA_POD_HAIR_BLOCK)
 			set_uni_feature_block(blocknumber, construct_block(SSaccessories.pod_hair_list.Find(features["pod_hair"]), length(SSaccessories.pod_hair_list)))
+		if(DNA_FISH_TAIL_BLOCK)
+			set_uni_feature_block(blocknumber, construct_block(SSaccessories.tails_list_fish.Find(features["fish_tail"]), length(SSaccessories.tails_list_fish)))
 */
 //SKYRAT EDIT REMOVAL END
-
-//Please use add_mutation or activate_mutation instead
-/datum/dna/proc/force_give(datum/mutation/human/human_mutation)
-	if(holder && human_mutation)
-		if(human_mutation.class == MUT_NORMAL)
-			set_se(1, human_mutation)
-		. = human_mutation.on_acquiring(holder)
-		if(.)
-			qdel(human_mutation)
-		update_instability()
-
-//Use remove_mutation instead
-/datum/dna/proc/force_lose(datum/mutation/human/human_mutation)
-	if(holder && (human_mutation in mutations))
-		set_se(0, human_mutation)
-		. = human_mutation.on_losing(holder)
-		if(!(human_mutation in mutations))
-			qdel(human_mutation) // qdel mutations on removal
-			update_instability(FALSE)
-		return
 
 /**
  * Checks if two DNAs are practically the same by comparing their most defining features
@@ -463,17 +472,18 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 		&& real_name == target_dna.real_name \
 		&& species.type == target_dna.species.type \
 		&& compare_list(features, target_dna.features) \
-		&& blood_type == target_dna.blood_type \
+		&& blood_type.type == target_dna.blood_type.type \
 	)
 		return TRUE
 
 	return FALSE
 
 /datum/dna/proc/update_instability(alert=TRUE)
+	var/old_stability = stability
 	stability = 100
-	for(var/datum/mutation/human/M in mutations)
-		if(M.class == MUT_EXTRA || M.instability < 0)
-			stability -= M.instability * GET_MUTATION_STABILIZER(M)
+	for(var/datum/mutation/mutation in mutations)
+		if((MUTATION_SOURCE_MUTATOR in mutation.sources) || mutation.instability < 0)
+			stability -= mutation.instability * GET_MUTATION_STABILIZER(mutation)
 	if(holder)
 		var/message
 		if(alert)
@@ -492,7 +502,7 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 					message = span_boldwarning("You can feel your DNA exploding, we need to do something fast!")
 		if(stability <= 0)
 			holder.apply_status_effect(/datum/status_effect/dna_melt)
-		if(message)
+		if(message && stability < old_stability)
 			to_chat(holder, message)
 
 /// Updates the UI, UE, and UF of the DNA according to the features, appearance, name, etc. of the DNA / holder.
@@ -508,7 +518,7 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
  * * create_mutation_blocks - If true, generate_dna_blocks is called, which is used to set up mutation blocks (what a mob can naturally mutate).
  * * randomize_features - If true, all entries in the features list will be randomized.
  */
-/datum/dna/proc/initialize_dna(newblood_type, create_mutation_blocks = TRUE, randomize_features = TRUE)
+/datum/dna/proc/initialize_dna(newblood_type = random_human_blood_type(), create_mutation_blocks = TRUE, randomize_features = TRUE)
 	if(newblood_type)
 		blood_type = newblood_type
 	if(create_mutation_blocks) //I hate this
@@ -528,23 +538,24 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 
 		features = species.randomize_features() | features // SKYRAT EDIT CHANGE - Where applicable, replace features with the features generated by species/randomize_features() - Original: features["mcolor"] = "#[random_color()]"
 		body_markings = species.get_random_body_markings(features) // SKYRAT EDIT ADDITION
-			
+
+		features["mcolor"] = "#[random_color()]"
 
 	mutant_bodyparts = species.get_mutant_bodyparts(features, existing_mutant_bodyparts = randomize_features ? list() : mutant_bodyparts) // SKYRAT EDIT ADDITION
 	update_dna_identity()
 
 /datum/dna/stored //subtype used by brain mob's stored_dna and the crew manifest
 
-/datum/dna/stored/add_mutation(mutation_name) //no mutation changes on stored dna.
+/datum/dna/stored/add_mutation(mutation_name, list/sources) //no mutation changes on stored dna.
 	return
 
-/datum/dna/stored/remove_mutation(mutation_name)
+/datum/dna/stored/remove_mutation(mutation_name, list/sources)
 	return
 
 /datum/dna/stored/check_mutation(mutation_name)
 	return
 
-/datum/dna/stored/remove_all_mutations(list/classes, mutadone = FALSE)
+/datum/dna/stored/remove_all_mutations(list/classes, list/sources)
 	return
 
 /datum/dna/stored/remove_mutation_group(list/group)
@@ -613,11 +624,10 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 
 	dna.update_body_size()
 	// SKYRAT EDIT ADDITION END
-
-	dna.species.on_species_gain(src, old_species, pref_load)
+	dna.species.on_species_gain(src, old_species, pref_load, regenerate_icons = icon_update)
 	log_mob_tag("TAG: [tag] SPECIES: [key_name(src)] \[[mrace]\]")
 
-/mob/living/carbon/human/set_species(datum/species/mrace, icon_update = TRUE, pref_load = FALSE)
+/mob/living/carbon/human/set_species(datum/species/mrace, icon_update = TRUE, pref_load = FALSE, list/override_features, list/override_mutantparts, list/override_markings) // SKYRAT EDIT CHANGE - ORIGINAL: /mob/living/carbon/human/set_species(datum/species/mrace, icon_update = TRUE, pref_load = FALSE)
 	..()
 	if(icon_update)
 		update_body(is_creating = TRUE)
@@ -642,7 +652,6 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 
 /// Sets the DNA of the mob to the given DNA.
 /mob/living/carbon/human/proc/hardset_dna(unique_identity, list/mutation_index, list/default_mutation_genes, newreal_name, newblood_type, datum/species/mrace, newfeatures, list/mutations, force_transfer_mutations)
-//Do not use force_transfer_mutations for stuff like cloners without some precautions, otherwise some conditional mutations could break (timers, drill hat etc)
 	if(newfeatures)
 		dna.features = newfeatures
 		dna.generate_unique_features()
@@ -657,7 +666,7 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 		dna.generate_unique_enzymes()
 
 	if(newblood_type)
-		dna.blood_type = newblood_type
+		set_blood_type(newblood_type)
 
 	if(unique_identity)
 		dna.unique_identity = unique_identity
@@ -675,9 +684,11 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 		update_body(is_creating = TRUE)
 		update_mutations_overlay()
 
-	if(LAZYLEN(mutations) && force_transfer_mutations)
-		for(var/datum/mutation/human/mutation as anything in mutations)
-			dna.force_give(new mutation.type(mutation.class, copymut = mutation)) //using force_give since it may include exotic mutations that otherwise won't be handled properly
+	if(LAZYLEN(mutations) && force_transfer_mutations && can_mutate())
+		for(var/datum/mutation/mutation as anything in mutations)
+			var/list/allowed_sources = mutation.sources & GLOB.standard_mutation_sources
+			if(allowed_sources)
+				dna.add_mutation(mutation, allowed_sources)
 
 /mob/living/carbon/proc/create_dna()
 	dna = new /datum/dna(src)
@@ -711,8 +722,7 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 	..()
 	var/structure = dna.unique_identity
 	skin_tone = GLOB.skin_tones[deconstruct_block(get_uni_identity_block(structure, DNA_SKIN_TONE_BLOCK), GLOB.skin_tones.len)]
-	eye_color_left = sanitize_hexcolor(get_uni_identity_block(structure, DNA_EYE_COLOR_LEFT_BLOCK))
-	eye_color_right = sanitize_hexcolor(get_uni_identity_block(structure, DNA_EYE_COLOR_RIGHT_BLOCK))
+	set_eye_color(sanitize_hexcolor(get_uni_identity_block(structure, DNA_EYE_COLOR_LEFT_BLOCK)), sanitize_hexcolor(get_uni_identity_block(structure, DNA_EYE_COLOR_RIGHT_BLOCK)))
 	set_haircolor(sanitize_hexcolor(get_uni_identity_block(structure, DNA_HAIR_COLOR_BLOCK)), update = FALSE)
 	set_facial_haircolor(sanitize_hexcolor(get_uni_identity_block(structure, DNA_FACIAL_HAIR_COLOR_BLOCK)), update = FALSE)
 	set_hair_gradient_color(sanitize_hexcolor(get_uni_identity_block(structure, DNA_HAIR_COLOR_GRADIENT_BLOCK)), update = FALSE)
@@ -747,9 +757,8 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 	if(dna.features["spines"])
 		dna.features["spines"] = SSaccessories.spines_list[deconstruct_block(get_uni_feature_block(features, DNA_SPINES_BLOCK), length(SSaccessories.spines_list))]
 	if(dna.features["tail_cat"])
-		dna.features["tail_cat"] = SSaccessories.tails_list_human[deconstruct_block(get_uni_feature_block(features, DNA_TAIL_BLOCK), length(SSaccessories.tails_list_human))]
+		dna.features["tail_cat"] = SSaccessories.tails_list_felinid[deconstruct_block(get_uni_feature_block(features, DNA_TAIL_BLOCK), length(SSaccessories.tails_list_felinid))]
 	if(dna.features["tail_lizard"])
-		dna.features["tail_cat"] = GLOB.tails_list_lizard[deconstruct_block(get_uni_feature_block(features, DNA_LIZARD_TAIL_BLOCK), GLOB.tails_list_lizard.len)]
 		dna.features["tail_lizard"] = SSaccessories.tails_list_lizard[deconstruct_block(get_uni_feature_block(features, DNA_LIZARD_TAIL_BLOCK), length(SSaccessories.tails_list_lizard))]
 	if(dna.features["ears"])
 		dna.features["ears"] = SSaccessories.ears_list[deconstruct_block(get_uni_feature_block(features, DNA_EARS_BLOCK), length(SSaccessories.ears_list))]
@@ -760,21 +769,23 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 	if(dna.features["moth_antennae"])
 		var/genetic_value = SSaccessories.moth_antennae_list[deconstruct_block(get_uni_feature_block(features, DNA_MOTH_ANTENNAE_BLOCK), length(SSaccessories.moth_antennae_list))]
 		dna.features["original_moth_antennae"] = genetic_value
-		if(dna.features["moth_antennae"] != "Burnt Off")
-			dna.features["moth_antennae"] = genetic_value
+		dna.features["moth_antennae"] = genetic_value
 	if(dna.features["moth_markings"])
 		dna.features["moth_markings"] = SSaccessories.moth_markings_list[deconstruct_block(get_uni_feature_block(features, DNA_MOTH_MARKINGS_BLOCK), length(SSaccessories.moth_markings_list))]
 	if(dna.features["caps"])
 		dna.features["caps"] = SSaccessories.caps_list[deconstruct_block(get_uni_feature_block(features, DNA_MUSHROOM_CAPS_BLOCK), length(SSaccessories.caps_list))]
 	if(dna.features["pod_hair"])
 		dna.features["pod_hair"] = SSaccessories.pod_hair_list[deconstruct_block(get_uni_feature_block(features, DNA_POD_HAIR_BLOCK), length(SSaccessories.pod_hair_list))]
+	if(dna.features["fish_tail"])
+		dna.features["fish_tail"] = SSaccessories.tails_list_fish[deconstruct_block(get_uni_feature_block(features, DNA_FISH_TAIL_BLOCK), length(SSaccessories.tails_list_fish))]
 
-
-	for(var/obj/item/organ/external/external_organ in organs)
-		external_organ.mutate_feature(features, src)
+	for(var/obj/item/organ/organ in organs)
+		organ.mutate_feature(features, src)
 
 	if(icon_update)
 		update_body(is_creating = mutcolor_update)
+		if(mutations_overlay_update)
+			update_mutations_overlay()
 */
 //SKYRAT EDIT REMOVAL END
 
@@ -790,19 +801,24 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 
 	update_mutations_overlay()
 
-/datum/dna/proc/check_block(mutation)
-	var/datum/mutation/human/HM = get_mutation(mutation)
-	if(check_block_string(mutation))
-		if(!HM)
-			. = add_mutation(mutation, MUT_NORMAL)
+/datum/dna/proc/check_block(mutation_path)
+	var/datum/mutation/mutation = get_mutation(mutation_path)
+	if(check_block_string(mutation_path))
+		if(!mutation)
+			add_mutation(mutation_path, MUTATION_SOURCE_ACTIVATED)
 		return
-	return force_lose(HM)
+	if(MUTATION_SOURCE_ACTIVATED in mutation?.sources)
+		remove_mutation(mutation, MUTATION_SOURCE_ACTIVATED)
 
 //Return the active mutation of a type if there is one
-/datum/dna/proc/get_mutation(A)
-	for(var/datum/mutation/human/HM in mutations)
-		if(istype(HM, A))
-			return HM
+/datum/dna/proc/get_mutation(mutation_path)
+	if(istype(mutation_path, /datum/mutation))
+		var/datum/mutation/mutation = mutation_path
+		mutation_path = mutation.type
+	for(var/datum/mutation/mutation as anything in mutations)
+		if(mutation.type == mutation_path)
+			return mutation
+	return null
 
 /datum/dna/proc/check_block_string(mutation)
 	if((LAZYLEN(mutation_index) > DNA_MUTATION_BLOCKS) || !(mutation in mutation_index))
@@ -812,7 +828,7 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 /datum/dna/proc/is_gene_active(mutation)
 	return (mutation_index[mutation] == GET_SEQUENCE(mutation))
 
-/datum/dna/proc/set_se(on=TRUE, datum/mutation/human/HM)
+/datum/dna/proc/set_se(on=TRUE, datum/mutation/HM)
 	if(!HM || !(HM.type in mutation_index) || (LAZYLEN(mutation_index) < DNA_MUTATION_BLOCKS))
 		return
 	. = TRUE
@@ -828,12 +844,12 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 	if(!mutation)
 		return FALSE
 	var/mutation_type = mutation
-	if(istype(mutation, /datum/mutation/human))
-		var/datum/mutation/human/M = mutation
-		mutation_type = M.type
-	if(!mutation_in_sequence(mutation_type)) //cant activate what we dont have, use add_mutation
+	if(istype(mutation, /datum/mutation))
+		var/datum/mutation/instance = mutation
+		mutation_type = instance.type
+	if(!mutation_in_sequence(mutation_type)) //can't activate what we don't have, use add_mutation
 		return FALSE
-	add_mutation(mutation, MUT_NORMAL)
+	add_mutation(mutation, MUTATION_SOURCE_ACTIVATED)
 	return TRUE
 
 /////////////////////////// DNA HELPER-PROCS //////////////////////////////
@@ -841,23 +857,24 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 /datum/dna/proc/mutation_in_sequence(mutation)
 	if(!mutation)
 		return
-	if(istype(mutation, /datum/mutation/human))
-		var/datum/mutation/human/HM = mutation
+	if(istype(mutation, /datum/mutation))
+		var/datum/mutation/HM = mutation
 		if(HM.type in mutation_index)
 			return TRUE
 	else if(mutation in mutation_index)
 		return TRUE
 
 
-/mob/living/carbon/proc/random_mutate(list/candidates, difficulty = 2)
+/mob/living/carbon/proc/random_mutate(list/candidates)
 	if(!has_dna())
 		CRASH("[src] does not have DNA")
 	var/mutation = pick(candidates)
-	. = dna.add_mutation(mutation)
+	. = dna.add_mutation(mutation, MUTATION_SOURCE_MUTATOR)
 
-/mob/living/carbon/proc/easy_random_mutate(quality = POSITIVE + NEGATIVE + MINOR_NEGATIVE, scrambled = TRUE, sequence = TRUE, exclude_monkey = TRUE, resilient = NONE)
+///Returns a random mutation typepath based on the given arguments. By default, all available mutations in the dna sequence but the monkey one.
+/mob/living/carbon/proc/get_random_mutation_path(quality = POSITIVE|NEGATIVE|MINOR_NEGATIVE, scrambled = TRUE, sequence = TRUE, list/excluded_mutations = list(/datum/mutation/race))
 	if(!has_dna())
-		CRASH("[src] does not have DNA")
+		return null
 	var/list/mutations = list()
 	if(quality & POSITIVE)
 		mutations += GLOB.good_mutations
@@ -866,27 +883,27 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 	if(quality & MINOR_NEGATIVE)
 		mutations += GLOB.not_good_mutations
 	var/list/possible = list()
-	for(var/datum/mutation/human/A in mutations)
-		if((!sequence || dna.mutation_in_sequence(A.type)) && !dna.get_mutation(A.type))
-			possible += A.type
-	if(exclude_monkey)
-		possible.Remove(/datum/mutation/human/race)
-	if(LAZYLEN(possible))
-		var/mutation = pick(possible)
-		. = dna.activate_mutation(mutation)
-		if(scrambled)
-			var/datum/mutation/human/HM = dna.get_mutation(mutation)
-			if(HM)
-				HM.scrambled = TRUE
-				if(HM.quality & resilient)
-					HM.mutadone_proof = TRUE
-		return TRUE
+	for(var/datum/mutation/mutation in mutations)
+		if((!sequence || dna.mutation_in_sequence(mutation.type)) && !dna.get_mutation(mutation.type))
+			possible += mutation.type
+	possible -= excluded_mutations
+	return pick(possible)
+
+///Gives the mob a random mutation based on the given arguments.
+/mob/living/carbon/proc/easy_random_mutate(quality = POSITIVE|NEGATIVE|MINOR_NEGATIVE, scrambled = TRUE, sequence = TRUE, list/excluded_mutations = list(/datum/mutation/race))
+	var/mutation_path = get_random_mutation_path(quality, scrambled, sequence, excluded_mutations)
+	dna.add_mutation(mutation_path, MUTATION_SOURCE_ACTIVATED)
+	if(!scrambled)
+		return
+	var/datum/mutation/mutation = dna.get_mutation(mutation_path)
+	if(mutation)
+		mutation.scrambled = TRUE
 
 /mob/living/carbon/proc/random_mutate_unique_identity()
 	if(!has_dna())
 		CRASH("[src] does not have DNA")
 	var/num = rand(1, DNA_UNI_IDENTITY_BLOCKS)
-	dna.set_uni_identity_block(num, random_string(GET_UI_BLOCK_LEN(num), GLOB.hex_characters))
+	dna.set_uni_feature_block(num, random_string(GET_UI_BLOCK_LEN(num), GLOB.hex_characters))
 	updateappearance(mutations_overlay_update=1)
 
 /mob/living/carbon/proc/random_mutate_unique_features()
@@ -918,7 +935,7 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 	if(ui)
 		for(var/blocknum in 1 to DNA_UNI_IDENTITY_BLOCKS)
 			if(prob(probability))
-				M.dna.set_uni_identity_block(blocknum, random_string(GET_UI_BLOCK_LEN(blocknum), GLOB.hex_characters))
+				M.dna.set_uni_feature_block(blocknum, random_string(GET_UI_BLOCK_LEN(blocknum), GLOB.hex_characters))
 	if(uf)
 		for(var/blocknum in 1 to DNA_FEATURE_BLOCKS)
 			if(prob(probability))
@@ -979,7 +996,7 @@ GLOBAL_LIST_INIT(total_uf_len_by_block, populate_total_uf_len_by_block())
 
 /mob/living/carbon/human/proc/something_horrible_mindmelt()
 	if(!is_blind())
-		var/obj/item/organ/internal/eyes/eyes = locate(/obj/item/organ/internal/eyes) in organs
+		var/obj/item/organ/eyes/eyes = locate(/obj/item/organ/eyes) in organs
 		if(!eyes)
 			return
 		eyes.Remove(src)

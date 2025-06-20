@@ -1,11 +1,11 @@
 /obj/item/scythe
 	name = "scythe"
 	desc = "A sharp and curved blade on a long fibremetal handle, this tool makes it easy to reap what you sow."
-	icon = 'modular_skyrat/modules/space_vines/items_and_weapons.dmi'
+	icon = 'modular_skyrat/modules/space_vines/icons/items_and_weapons.dmi'
 	icon_state = "scythe_t1"
-	worn_icon = 'modular_skyrat/modules/space_vines/back.dmi'
-	lefthand_file = 'modular_skyrat/modules/space_vines/polearms_lefthand.dmi'
-	righthand_file = 'modular_skyrat/modules/space_vines/polearms_righthand.dmi'
+	worn_icon = 'modular_skyrat/modules/space_vines/icons/back.dmi'
+	lefthand_file = 'modular_skyrat/modules/space_vines/icons/polearms_lefthand.dmi'
+	righthand_file = 'modular_skyrat/modules/space_vines/icons/polearms_righthand.dmi'
 	force = 13
 	throwforce = 5
 	throw_speed = 2
@@ -17,7 +17,7 @@
 	slot_flags = ITEM_SLOT_BACK
 	attack_verb_continuous = list("chops", "slices", "cuts", "reaps")
 	attack_verb_simple = list("chop", "slice", "cut", "reap")
-	hitsound = 'sound/weapons/bladeslice.ogg'
+	hitsound = 'sound/items/weapons/bladeslice.ogg'
 	item_flags = CRUEL_IMPLEMENT //maybe they want to use it in surgery
 
 	var/hit_range = 0

@@ -16,6 +16,16 @@
 	melee_damage_upper = 20
 	next_evolution = /mob/living/carbon/alien/adult/skyrat/ravager
 	on_fire_pixel_y = 0
+	default_organ_types_by_slot = list(
+		ORGAN_SLOT_BRAIN = /obj/item/organ/brain/alien,
+		ORGAN_SLOT_XENO_HIVENODE = /obj/item/organ/alien/hivenode,
+		ORGAN_SLOT_TONGUE = /obj/item/organ/tongue/alien,
+		ORGAN_SLOT_EYES = /obj/item/organ/eyes/alien,
+		ORGAN_SLOT_LIVER = /obj/item/organ/liver/alien,
+		ORGAN_SLOT_EARS = /obj/item/organ/ears,
+		ORGAN_SLOT_STOMACH = /obj/item/organ/stomach/alien,
+		ORGAN_SLOT_XENO_PLASMAVESSEL = /obj/item/organ/alien/plasmavessel/small/tiny,
+	)
 
 /mob/living/carbon/alien/adult/skyrat/runner/Initialize(mapload)
 	. = ..()
@@ -24,10 +34,6 @@
 	evade_ability.Grant(src)
 
 	add_movespeed_modifier(/datum/movespeed_modifier/alien_quick)
-
-/mob/living/carbon/alien/adult/skyrat/runner/create_internal_organs()
-	organs += new /obj/item/organ/internal/alien/plasmavessel/small/tiny
-	..()
 
 /datum/action/cooldown/alien/skyrat/evade
 	name = "Evade"
@@ -69,11 +75,11 @@
 
 /// Handles if either BULLET_ACT_HIT or BULLET_ACT_FORCE_PIERCE happens to something using the xeno evade ability
 /datum/action/cooldown/alien/skyrat/evade/proc/on_projectile_hit()
-	if(owner.incapacitated(IGNORE_GRAB) || !isturf(owner.loc) || !evade_active)
+	if(!INCAPACITATED_IGNORING(owner, INCAPABLE_GRAB) || !isturf(owner.loc) || !evade_active)
 		return BULLET_ACT_HIT
 
 	owner.visible_message(span_danger("[owner] effortlessly dodges the projectile!"), span_userdanger("You dodge the projectile!"))
-	playsound(get_turf(owner), pick('sound/weapons/bulletflyby.ogg', 'sound/weapons/bulletflyby2.ogg', 'sound/weapons/bulletflyby3.ogg'), 75, TRUE)
+	playsound(get_turf(owner), pick('sound/items/weapons/bulletflyby.ogg', 'sound/items/weapons/bulletflyby2.ogg', 'sound/items/weapons/bulletflyby3.ogg'), 75, TRUE)
 	owner.add_filter(RUNNER_BLUR_EFFECT, 2, gauss_blur_filter(5))
 	addtimer(CALLBACK(owner, TYPE_PROC_REF(/datum, remove_filter), RUNNER_BLUR_EFFECT), 0.5 SECONDS)
 	return BULLET_ACT_FORCE_PIERCE

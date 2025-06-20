@@ -26,28 +26,31 @@
 	var/min_wchance = 67
 	var/min_wrate = 10
 
+/datum/plant_gene/reagent
+	mutability_flags = PLANT_GENE_GRAFTABLE | PLANT_GENE_REMOVABLE
+
 /obj/machinery/plantgenes/RefreshParts() // Comments represent the max you can set per tier, respectively. seeds.dm [219] clamps these for us but we don't want to mislead the viewer.
 	. = ..()
-	for(var/obj/item/stock_parts/servo/M in component_parts)
-		if(M.rating > 3)
+	for(var/datum/stock_part/servo/M in component_parts)
+		if(M.tier > 3)
 			max_potency = 95
 		else
-			max_potency = initial(max_potency) + (M.rating**3) // 53,59,77,95 	 Clamps at 100
+			max_potency = initial(max_potency) + (M.tier**3) // 53,59,77,95 	 Clamps at 100
 
-		max_yield = initial(max_yield) + (M.rating*2) // 4,6,8,10 	Clamps at 10
+		max_yield = initial(max_yield) + (M.tier*2) // 4,6,8,10 	Clamps at 10
 
-	for(var/obj/item/stock_parts/scanning_module/SM in component_parts)
-		if(SM.rating > 3) //If you create t5 parts I'm a step ahead mwahahaha!
+	for(var/datum/stock_part/scanning_module/SM in component_parts)
+		if(SM.tier > 3) //If you create t5 parts I'm a step ahead mwahahaha!
 			min_production = 1
 		else
-			min_production = 12 - (SM.rating * 3) //9,6,3,1. Requires if to avoid going below clamp [1]
+			min_production = 12 - (SM.tier * 3) //9,6,3,1. Requires if to avoid going below clamp [1]
 
-		max_endurance = initial(max_endurance) + (SM.rating * 25) // 35,60,85,100	Clamps at 10min 100max
+		max_endurance = initial(max_endurance) + (SM.tier * 25) // 35,60,85,100	Clamps at 10min 100max
 
-	for(var/obj/item/stock_parts/micro_laser/ML in component_parts)
-		var/wratemod = ML.rating * 2.5
+	for(var/datum/stock_part/micro_laser/ML in component_parts)
+		var/wratemod = ML.tier * 2.5
 		min_wrate = FLOOR(10-wratemod,1) // 7,5,2,0	Clamps at 0 and 10	You want this low
-		min_wchance = 67-(ML.rating*16) // 48,35,19,3 	Clamps at 0 and 67	You want this low
+		min_wchance = 67-(ML.tier*16) // 48,35,19,3 	Clamps at 0 and 67	You want this low
 
 	/* lets not add the snowflake editor for plant people rn
 	for(var/obj/item/circuitboard/machine/plantgenes/vaultcheck in component_parts)
@@ -173,19 +176,19 @@
 				dat += "<span class='highlight'>[target.get_name()]</span> gene with <span class='highlight'>[disk.gene.get_name()]</span>?<br>"
 			if("insert")
 				dat += "<span class='highlight'>[disk.gene.get_name()]</span> gene into \the <span class='highlight'>[seed]</span>?<br>"
-		dat += "</div><div class='line'><a href='?src=[REF(src)];gene=[REF(target)];op=[operation]'>Confirm</a> "
-		dat += "<a href='?src=[REF(src)];abort=1'>Abort</a></div>"
+		dat += "</div><div class='line'><a href='byond://?src=[REF(src)];gene=[REF(target)];op=[operation]'>Confirm</a> "
+		dat += "<a href='byond://?src=[REF(src)];abort=1'>Abort</a></div>"
 		popup.set_content(dat)
 		popup.open()
 		return
 
 	dat+= "<div class='statusDisplay'>"
 
-	dat += "<div class='line'><div class='statusLabel'>Plant Sample:</div><div class='statusValue'><a href='?src=[REF(src)];eject_seed=1'>"
+	dat += "<div class='line'><div class='statusLabel'>Plant Sample:</div><div class='statusValue'><a href='byond://?src=[REF(src)];eject_seed=1'>"
 	dat += seed ? seed.name : "None"
 	dat += "</a></div></div>"
 
-	dat += "<div class='line'><div class='statusLabel'>Data Disk:</div><div class='statusValue'><a href='?src=[REF(src)];eject_disk=1'>"
+	dat += "<div class='line'><div class='statusLabel'>Data Disk:</div><div class='statusValue'><a href='byond://?src=[REF(src)];eject_disk=1'>"
 	if(!disk)
 		dat += "None"
 	else if(!disk.gene)
@@ -209,9 +212,9 @@
 				continue
 			dat += "<tr><td width='260px'>[G.get_name()]</td><td>"
 			if(can_extract && G.mutability_flags & PLANT_GENE_GRAFTABLE)
-				dat += "<a href='?src=[REF(src)];gene=[REF(G)];op=extract'>Extract</a>"
+				dat += "<a href='byond://?src=[REF(src)];gene=[REF(G)];op=extract'>Extract</a>"
 			if(can_insert && istype(disk.gene, G.type) && G.mutability_flags & PLANT_GENE_REMOVABLE)
-				dat += "<a href='?src=[REF(src)];gene=[REF(G)];op=replace'>Replace</a>"
+				dat += "<a href='byond://?src=[REF(src)];gene=[REF(G)];op=replace'>Replace</a>"
 			dat += "</td></tr>"
 		dat += "</table></div>"
 
@@ -223,16 +226,16 @@
 					var/datum/plant_gene/G = a
 					dat += "<tr><td width='260px'>[G.get_name()]</td><td>"
 					if(can_extract && G.mutability_flags & PLANT_GENE_GRAFTABLE)
-						dat += "<a href='?src=[REF(src)];gene=[REF(G)];op=extract'>Extract</a>"
+						dat += "<a href='byond://?src=[REF(src)];gene=[REF(G)];op=extract'>Extract</a>"
 					if(G.mutability_flags & PLANT_GENE_REMOVABLE)
-						dat += "<a href='?src=[REF(src)];gene=[REF(G)];op=remove'>Remove</a>"
+						dat += "<a href='byond://?src=[REF(src)];gene=[REF(G)];op=remove'>Remove</a>"
 					dat += "</td></tr>"
 				dat += "</table>"
 			else
 				dat += "No content-related genes detected in sample.<br>"
 			dat += "</div>"
 			if(can_insert && istype(disk.gene, /datum/plant_gene/reagent))
-				dat += "<a href='?src=[REF(src)];op=insert'>Insert: [disk.gene.get_name()]</a>"
+				dat += "<a href='byond://?src=[REF(src)];op=insert'>Insert: [disk.gene.get_name()]</a>"
 
 			dat += "<div class='line'><h3>Trait Genes</h3></div><div class='statusDisplay'>"
 			if(trait_genes.len)
@@ -241,15 +244,15 @@
 					var/datum/plant_gene/G = a
 					dat += "<tr><td width='260px'>[G.get_name()]</td><td>"
 					if(can_extract && G.mutability_flags & PLANT_GENE_GRAFTABLE)
-						dat += "<a href='?src=[REF(src)];gene=[REF(G)];op=extract'>Extract</a>"
+						dat += "<a href='byond://?src=[REF(src)];gene=[REF(G)];op=extract'>Extract</a>"
 					if(G.mutability_flags & PLANT_GENE_REMOVABLE)
-						dat += "<a href='?src=[REF(src)];gene=[REF(G)];op=remove'>Remove</a>"
+						dat += "<a href='byond://?src=[REF(src)];gene=[REF(G)];op=remove'>Remove</a>"
 					dat += "</td></tr>"
 				dat += "</table>"
 			else
 				dat += "No trait-related genes detected in sample.<br>"
 			if(can_insert && istype(disk.gene, /datum/plant_gene/trait))
-				dat += "<a href='?src=[REF(src)];op=insert'>Insert: [disk.gene.get_name()]</a>"
+				dat += "<a href='byond://?src=[REF(src)];op=insert'>Insert: [disk.gene.get_name()]</a>"
 			dat += "</div>"
 	else
 		dat += "<br>No sample found.<br><span class='highlight'>Please, insert a plant sample to use this device.</span>"
@@ -443,7 +446,7 @@
 	var/read_only = 0 //Well, it's still a floppy disk
 	obj_flags = UNIQUE_RENAME
 
-/obj/item/disk/plantgene/Initialize()
+/obj/item/disk/plantgene/Initialize(mapload)
 	. = ..()
 	add_overlay("datadisk_gene")
 	src.pixel_x = rand(-5, 5)

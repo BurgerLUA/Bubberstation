@@ -49,16 +49,15 @@
 	// Check for cooldown to avoid paper spamming
 	if(COOLDOWN_FINISHED(src, printer_cooldown))
 		// If there's not too much paper already, let's go
-		if(!toppaper_ref || length(contents) < MAX_PAPER_INTEGRATED_CLIPBOARD)
+		if(length(contents) < MAX_PAPER_INTEGRATED_CLIPBOARD)
 			cyborg_user.cell.use(paper_charge_cost)
 			COOLDOWN_START(src, printer_cooldown, printer_cooldown_time)
 			var/obj/item/paper/new_paper = new /obj/item/paper
 			new_paper.forceMove(src)
-			if(toppaper_ref)
-				var/obj/item/paper/toppaper = toppaper_ref?.resolve()
-				UnregisterSignal(toppaper, COMSIG_ATOM_UPDATED_ICON)
+			if(top_paper)
+				UnregisterSignal(top_paper, COMSIG_ATOM_UPDATED_ICON)
 			RegisterSignal(new_paper, COMSIG_ATOM_UPDATED_ICON, PROC_REF(on_top_paper_change))
-			toppaper_ref = WEAKREF(new_paper)
+			top_paper = new_paper
 			update_appearance()
 			to_chat(user, span_notice("[src]'s integrated printer whirs to life, spitting out a fresh piece of paper and clipping it into place."))
 			return CLICK_ACTION_SUCCESS
@@ -95,7 +94,7 @@
 	/// Can it hold mobs? (Dangerous, it is recommended to leave this to FALSE)
 	var/can_hold_mobs = FALSE
 	/// Audio for using the hydraulic clamp.
-	var/clamp_sound = 'sound/mecha/hydraulic.ogg'
+	var/clamp_sound = 'sound/vehicles/mecha/hydraulic.ogg'
 	/// Volume of the clamp's loading and unloading noise.
 	var/clamp_sound_volume = 25
 	/// Cooldown for the clamp.
@@ -463,7 +462,7 @@
 	desc = "A cyborg fitted module resembling the jaws of life."
 	icon = 'modular_skyrat/modules/borgs/icons/robot_items.dmi'
 	icon_state = "jaws_pry_cyborg"
-	usesound = 'sound/items/jaws_pry.ogg'
+	usesound = 'sound/items/tools/jaws_pry.ogg'
 	force = 10
 	toolspeed = 0.5
 
@@ -472,25 +471,25 @@
 	. += " It's fitted with a [tool_behaviour == TOOL_CROWBAR ? "prying" : "cutting"] head."
 
 /obj/item/crowbar/cyborg/power/attack_self(mob/user)
-	playsound(get_turf(user), 'sound/items/change_jaws.ogg', 50, TRUE)
+	playsound(get_turf(user), 'sound/items/tools/change_jaws.ogg', 50, TRUE)
 	if(tool_behaviour == TOOL_CROWBAR)
 		tool_behaviour = TOOL_WIRECUTTER
 		to_chat(user, span_notice("You attach the cutting jaws to [src]."))
 		icon_state = "jaws_cutter_cyborg"
-		usesound = 'sound/items/jaws_cut.ogg'
+		usesound = 'sound/items/tools/jaws_cut.ogg'
 	else
 		tool_behaviour = TOOL_CROWBAR
 		to_chat(user, span_notice("You attach the prying jaws to [src]."))
 		icon_state = "jaws_pry_cyborg"
-		usesound = 'sound/items/jaws_pry.ogg'
+		usesound = 'sound/items/tools/jaws_pry.ogg'
 
 /obj/item/screwdriver/cyborg/power
 	name =	"automated drill"
 	desc = "A cyborg fitted module resembling the hand drill"
 	icon = 'modular_skyrat/modules/borgs/icons/robot_items.dmi'
 	icon_state = "drill_screw_cyborg"
-	hitsound = 'sound/items/drill_hit.ogg'
-	usesound = 'sound/items/drill_use.ogg'
+	hitsound = 'sound/items/tools/drill_hit.ogg'
+	usesound = 'sound/items/tools/drill_use.ogg'
 	toolspeed = 0.5
 	random_color = FALSE
 
@@ -499,7 +498,7 @@
 	. += " It's fitted with a [tool_behaviour == TOOL_SCREWDRIVER ? "screw" : "bolt"] head."
 
 /obj/item/screwdriver/cyborg/power/attack_self(mob/user)
-	playsound(get_turf(user), 'sound/items/change_drill.ogg', 50, TRUE)
+	playsound(get_turf(user), 'sound/items/tools/change_drill.ogg', 50, TRUE)
 	if(tool_behaviour == TOOL_SCREWDRIVER)
 		tool_behaviour = TOOL_WRENCH
 		to_chat(user, span_notice("You attach the bolt bit to [src]."))
@@ -575,7 +574,7 @@
 /obj/item/borg_shapeshifter/proc/check_menu(mob/user)
 	if(!istype(user))
 		return FALSE
-	if(user.incapacitated() || !user.Adjacent(src))
+	if(user.incapacitated || !user.Adjacent(src))
 		return FALSE
 	return TRUE
 
@@ -610,9 +609,7 @@
 			"Clown" = image(icon = 'icons/mob/silicon/robots.dmi', icon_state = "clown"),
 			"Syndicate" = image(icon = 'icons/mob/silicon/robots.dmi', icon_state = "synd_sec"),
 			"Spider Clan" = image(icon = CYBORG_ICON_NINJA, icon_state = "ninja_engi"),
-			//Bubber addition start
-			"Research" = image(icon = 'modular_zubbers/code/modules/borgs/sprites/robot_sci.dmi', icon_state = "research"),
-			//Bubber addition end
+			"Research" = image(icon = 'modular_zubbers/code/modules/silicons/borgs/sprites/robot_sci.dmi', icon_state = "research"),
 		))
 		var/model_selection = show_radial_menu(user, user, model_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), user), radius = 42, require_near = TRUE)
 		if(!model_selection)
@@ -644,10 +641,8 @@
 				model = new /obj/item/robot_model/syndicatejack
 			if("Spider Clan")
 				model = new /obj/item/robot_model/ninja
-			//Bubber addition start
 			if("Research")
 				model = new /obj/item/robot_model/sci
-			//Bubber addition end
 			else
 				return FALSE
 		if (!set_disguise_vars(model, user))
@@ -730,18 +725,16 @@
 	user.bubble_icon = "robot"
 	active = TRUE
 	user.update_icons()
-	//user.model.update_dogborg() //BUBBER REMOVAL
 	user.model.update_tallborg()
-	//BUBBER EDIT ADDTION BEGIN
 	user.model.update_quadruped()
 	user.model.update_robot_rest()
-	//BUBBER EDIT ADDTION END
+	user.model.update_footsteps()
 
 	if(listeningTo == user)
 		return
 	if(listeningTo)
 		UnregisterSignal(listeningTo, signalCache)
-	RegisterSignal(user, signalCache, PROC_REF(disrupt))
+	RegisterSignals(user, signalCache, PROC_REF(disrupt))
 	listeningTo = user
 
 /obj/item/borg_shapeshifter/proc/deactivate(mob/living/silicon/robot/user)
@@ -759,12 +752,10 @@
 	user.bubble_icon = saved_bubble_icon
 	active = FALSE
 	user.update_icons()
-	//user.model.update_dogborg() //BUBBER REMOVAL
 	user.model.update_tallborg()
-	//BUBBER EDIT ADDTION BEGIN
 	user.model.update_quadruped()
 	user.model.update_robot_rest()
-	//BUBBER EDIT ADDTION END
+	user.model.update_footsteps()
 
 /obj/item/borg_shapeshifter/proc/disrupt(mob/living/silicon/robot/user)
 	SIGNAL_HANDLER
@@ -778,7 +769,7 @@
 	desc = "Useful for slurping mess off the floor before affectionally licking the crew members in the face."
 	icon = 'modular_skyrat/modules/borgs/icons/robot_items.dmi'
 	icon_state = "synthtongue"
-	hitsound = 'sound/effects/attackblob.ogg'
+	hitsound = 'sound/effects/blob/attackblob.ogg'
 	desc = "For giving affectionate kisses."
 	item_flags = NOBLUDGEON
 
@@ -792,10 +783,10 @@
 	if(!HAS_TRAIT(target, TRAIT_AFFECTION_AVERSION)) // Checks for Affection Aversion trait
 		if(check_zone(borg.zone_selected) == "head")
 			borg.visible_message(span_warning("\the [borg] affectionally licks \the [mob]'s face!"), span_notice("You affectionally lick \the [mob]'s face!"))
-			playsound(borg, 'sound/effects/attackblob.ogg', 50, 1)
+			playsound(borg, 'sound/effects/blob/attackblob.ogg', 50, 1)
 		else
 			borg.visible_message(span_warning("\the [borg] affectionally licks \the [mob]!"), span_notice("You affectionally lick \the [mob]!"))
-			playsound(borg, 'sound/effects/attackblob.ogg', 50, 1)
+			playsound(borg, 'sound/effects/blob/attackblob.ogg', 50, 1)
 		return ITEM_INTERACT_SUCCESS
 	else
 		to_chat(user, span_warning("ERROR: [target] is on the Do Not Lick registry!"))
@@ -848,7 +839,7 @@
 	whitelisted_item_description = "envelopes"
 	item_weight_limit = WEIGHT_CLASS_NORMAL
 	clamp_sound_volume = 25
-	clamp_sound = 'sound/items/pshoom.ogg'
+	clamp_sound = 'sound/items/pshoom/pshoom.ogg'
 
 /obj/item/borg/forging_setup
 	name = "integrated forging dispenser"
@@ -892,3 +883,7 @@
 			new /obj/structure/reagent_water_basin(src_turf)
 		if("Crafting Bench")
 			new /obj/structure/reagent_crafting_bench(src_turf)
+
+#undef CYBORG_FONT
+#undef MAX_PAPER_INTEGRATED_CLIPBOARD
+#undef BASE_NINJA_REAGENTS

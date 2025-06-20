@@ -162,7 +162,7 @@
 		resolve_parent.balloon_alert(user, "can't reach!")
 		return FALSE
 
-	if(!isliving(user) || user.incapacitated())
+	if(!isliving(user) || user.incapacitated)
 		return FALSE
 
 	var/obj/item/gun/gun_to_draw = locate() in real_location
@@ -203,60 +203,55 @@
 	base_icon_state = "security_eyepatch"
 
 /obj/item/clothing/glasses/hud/security/night
-	icon_state = "security_hud_nv"
-	glass_colour_type = /datum/client_colour/glass_colour/green
+	icon = 'icons/obj/clothing/glasses.dmi'
+	worn_icon = 'icons/mob/clothing/eyes.dmi'
 
 /*
 * HEAD
 */
 
-//Overrides the bulletproof helm with the older non red visor version.
+//Overrides the bulletproof helm with a fucking altyn helmet because yes
 /obj/item/clothing/head/helmet/alt
+	desc = "An armored helmet based on the NRI Altyn Helmet Design. These helmet provide excellent facial protection, if not, the best against ballistic."
 	icon = 'modular_skyrat/master_files/icons/obj/clothing/head/helmet.dmi'
 	worn_icon = 'modular_skyrat/master_files/icons/mob/clothing/head/helmet.dmi'
 	icon_state = "helmetalt_blue"
 	base_icon_state = "helmetalt_blue"
+	supports_variations_flags = CLOTHING_SNOUTED_VARIATION_NO_NEW_ICON
+	var/flipped_visor = FALSE
 
-//Standard helmet (w/ visor)
+/obj/item/clothing/head/helmet/alt/click_alt(mob/user)
+	flipped_visor = !flipped_visor
+	balloon_alert(user, "visor flipped")
+	// base_icon_state is modified for seclight attachment component
+	base_icon_state = "[initial(base_icon_state)][flipped_visor ? "-novisor" : ""]"
+	icon_state = base_icon_state
+	if (flipped_visor)
+		flags_cover &= ~HEADCOVERSEYES | PEPPERPROOF
+	else
+		flags_cover |= HEADCOVERSEYES | PEPPERPROOF
+	update_appearance()
+	return CLICK_ACTION_SUCCESS
+
+//Standard helmet
 /obj/item/clothing/head/helmet/sec
 	icon = 'modular_skyrat/master_files/icons/obj/clothing/head/helmet.dmi'
 	worn_icon = 'modular_skyrat/master_files/icons/mob/clothing/head/helmet.dmi'
 	icon_state = "security_helmet"
 	base_icon_state = "security_helmet"
-	actions_types = list(/datum/action/item_action/toggle)
-	supports_variations_flags = CLOTHING_SNOUTED_VARIATION
-	flags_cover = HEADCOVERSEYES | PEPPERPROOF
-	visor_flags_cover = HEADCOVERSEYES | PEPPERPROOF
+	clothing_flags = SNUG_FIT | STACKABLE_HELMET_EXEMPT
 	dog_fashion = null
+	supports_variations_flags = CLOTHING_SNOUTED_VARIATION_NO_NEW_ICON
 
-	///chat message when the visor is toggled down.
-	var/toggle_message = "You pull the visor down on"
-	///chat message when the visor is toggled up.
-	var/alt_toggle_message = "You push the visor up on"
-	///Can toggle?
-	var/can_toggle = TRUE
 
-/// Duplication of toggleable logic - only way to make it toggleable without worse hacks due to being in base maps.
-/obj/item/clothing/head/helmet/sec/attack_self(mob/user)
-	. = ..()
-	if(.)
-		return
-	if(user.incapacitated() || !can_toggle)
-		return
-	up = !up
-	flags_1 ^= visor_flags
-	flags_inv ^= visor_flags_inv
-	flags_cover ^= visor_flags_cover
-	// This part is changed to work with the seclight.
-	base_icon_state = "[initial(icon_state)][up ? "up" : ""]"
-	update_icon_state()
-	to_chat(user, span_notice("[up ? alt_toggle_message : toggle_message] \the [src]."))
+/obj/item/clothing/head/helmet/sec/futuristic
+	icon_state = "security_helmet_future"
+	base_icon_state = "security_helmet_future"
+	supports_variations_flags = CLOTHING_SNOUTED_VARIATION_NO_NEW_ICON
 
-	user.update_worn_head()
-	if(iscarbon(user))
-		var/mob/living/carbon/carbon_user = user
-		carbon_user.update_worn_head()
-
+/obj/item/clothing/head/helmet/sec/futuristic/blue
+	icon_state = "security_helmet_future_blue"
+	base_icon_state = "security_helmet_future_blue"
 
 //Beret replacement
 /obj/item/clothing/head/security_garrison
@@ -475,6 +470,48 @@
 	worn_icon = 'modular_skyrat/master_files/icons/mob/clothing/hands.dmi'
 	icon_state = "tackle_blue"
 
+	uses_advanced_reskins = TRUE
+	unique_reskin = list(
+		"Black Variant" = list(
+			RESKIN_ICON_STATE = "combat",
+			RESKIN_WORN_ICON_STATE = "combat"
+		),
+		"Blue Variant" = list(
+			RESKIN_ICON_STATE = "tackle_blue",
+			RESKIN_WORN_ICON_STATE = "tackle_blue"
+		),
+		"Red Variant" = list(
+			RESKIN_ICON = 'icons/obj/clothing/gloves.dmi',
+			RESKIN_WORN_ICON = 'icons/mob/clothing/hands.dmi',
+			RESKIN_ICON_STATE = "gorilla",
+			RESKIN_WORN_ICON_STATE = "gorilla"
+		),
+	)
+
+/obj/item/clothing/gloves/tackler/combat
+	icon = 'icons/obj/clothing/gloves.dmi'
+	worn_icon = 'icons/mob/clothing/hands.dmi'
+	icon_state = "gorilla"
+	uses_advanced_reskins = TRUE
+	unique_reskin = list(
+		"Black Variant" = list(
+			RESKIN_ICON = 'modular_skyrat/master_files/icons/obj/clothing/gloves.dmi',
+			RESKIN_WORN_ICON = 'modular_skyrat/master_files/icons/mob/clothing/hands.dmi',
+			RESKIN_ICON_STATE = "combat",
+			RESKIN_WORN_ICON_STATE = "combat"
+		),
+		"Blue Variant" = list(
+			RESKIN_ICON = 'modular_skyrat/master_files/icons/obj/clothing/gloves.dmi',
+			RESKIN_WORN_ICON = 'modular_skyrat/master_files/icons/mob/clothing/hands.dmi',
+			RESKIN_ICON_STATE = "tackle_blue",
+			RESKIN_WORN_ICON_STATE = "tackle_blue"
+		),
+		"Red Variant" = list(
+			RESKIN_ICON_STATE = "gorilla",
+			RESKIN_WORN_ICON_STATE = "gorilla"
+		),
+	)
+
 /obj/item/clothing/gloves/krav_maga/sec
 	icon = 'modular_skyrat/master_files/icons/obj/clothing/gloves.dmi'
 	worn_icon = 'modular_skyrat/master_files/icons/mob/clothing/hands.dmi'
@@ -651,7 +688,7 @@
 		"Blue Variant" = list(
 			RESKIN_ICON_STATE = "jumpskirt_blue",
 			RESKIN_WORN_ICON_STATE = "jumpskirt_blue"
-        ),
+		),
 		"Black Variant" = list(
 			RESKIN_ICON_STATE = "jumpskirt_black",
 			RESKIN_WORN_ICON_STATE = "jumpskirt_black"
@@ -767,15 +804,19 @@
 
 //PDA Greyscale Overrides
 /obj/item/modular_computer/pda/security
+	icon_state = "/obj/item/modular_computer/pda/security"
 	greyscale_colors = "#2B356D#1E1E1E"
 
 /obj/item/modular_computer/pda/detective
+	icon_state = "/obj/item/modular_computer/pda/detective"
 	greyscale_colors = "#90714F#1E1E1E"
 
 /obj/item/modular_computer/pda/warden
+	icon_state = "/obj/item/modular_computer/pda/warden"
 	greyscale_colors = "#2F416E#1E1E1E#ACACAC"
 
 /obj/item/modular_computer/pda/heads/hos
+	icon_state = "/obj/item/modular_computer/pda/heads/hos"
 	greyscale_colors = "#2B356D#1E1E1E"
 
 /*
@@ -855,11 +896,15 @@
 /obj/item/storage/belt/holster
 	desc = "A rather plain but still cool looking holster that can hold a handgun, and some ammo."
 
-/obj/item/storage/belt/holster/Initialize(mapload)
-	. = ..()
-	atom_storage.max_slots = 3
-	atom_storage.max_total_storage = 16
-	atom_storage.set_holdable(list(
+/datum/storage/holster
+	max_slots = 3
+	max_total_storage = 16
+
+/datum/storage/holster/New(atom/parent, max_slots, max_specific_storage, max_total_storage, list/holdables)
+	if(length(holdables))
+		return ..()
+
+	holdables = list(
 		/obj/item/gun/ballistic/automatic/pistol,
 		/obj/item/ammo_box/magazine, // Just magazine, because the sec-belt can hold these aswell
 		/obj/item/gun/ballistic/revolver,
@@ -875,16 +920,22 @@
 		/obj/item/gun/ballistic/rifle/boltaction, //fits if you make it an obrez
 		/obj/item/gun/energy/laser/captain,
 		/obj/item/gun/energy/e_gun/hos,
-		))
+	)
+
+	return ..()
 
 /obj/item/storage/belt/holster/detective
 	name = "detective's holster"
 	desc = "A holster able to carry handguns and extra ammo, thanks to an additional hand-sewn pouch. WARNING: Badasses only."
 
-/obj/item/storage/belt/holster/detective/Initialize(mapload)
-	. = ..()
-	atom_storage.max_slots = 4
-	atom_storage.set_holdable(list(
+/datum/storage/holster/detective
+	max_slots = 4
+
+/datum/storage/holster/detective/New(atom/parent, max_slots, max_specific_storage, max_total_storage, list/holdables)
+	if(length(holdables))
+		return ..()
+
+	holdables = list(
 		/obj/item/gun/ballistic/automatic/pistol,
 		/obj/item/ammo_box/magazine, // Just magazine, because the sec-belt can hold these aswell
 		/obj/item/gun/ballistic/revolver,
@@ -900,13 +951,18 @@
 		/obj/item/gun/ballistic/rifle/boltaction, //fits if you make it an obrez
 		/obj/item/gun/energy/laser/captain,
 		/obj/item/gun/energy/e_gun/hos,
-		))
+	)
 
-/obj/item/storage/belt/holster/energy/Initialize(mapload)
-	. = ..()
-	atom_storage.max_slots = 2
-	atom_storage.max_specific_storage = WEIGHT_CLASS_NORMAL
-	atom_storage.set_holdable(list(
+	return ..()
+
+/datum/storage/holster/energy
+	max_specific_storage = WEIGHT_CLASS_NORMAL
+
+/datum/storage/holster/energy/New(atom/parent, max_slots, max_specific_storage, max_total_storage, list/holdables)
+	if(length(holdables))
+		return ..()
+
+	holdables = list(
 		/obj/item/gun/energy/e_gun/mini,
 		/obj/item/gun/energy/disabler,
 		/obj/item/gun/energy/dueling,
@@ -918,7 +974,10 @@
 		/obj/item/gun/ballistic/automatic/pistol/plasma_marksman,
 		/obj/item/gun/ballistic/automatic/pistol/plasma_thrower,
 		/obj/item/ammo_box/magazine/recharge/plasma_battery,
-	))
+	)
+
+	return ..()
+
 /*
 *	HEAD
 */
@@ -929,7 +988,6 @@
 	icon_state = "helmet"
 	base_icon_state = "helmet"
 	actions_types = null
-	can_toggle = FALSE
 	supports_variations_flags = CLOTHING_SNOUTED_VARIATION_NO_NEW_ICON
 	flags_cover = HEADCOVERSEYES
 	flags_inv = HIDEHAIR

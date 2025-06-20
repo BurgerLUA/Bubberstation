@@ -34,6 +34,57 @@
 	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/structure/kitchenspike_frame/welder_act(mob/living/user, obj/item/tool)
+	if(!tool.tool_start_check(user, amount = 0, heat_required = HIGH_TEMPERATURE_REQUIRED))
+		return FALSE
+	to_chat(user, span_notice("You begin cutting \the [src] apart..."))
+	if(!tool.use_tool(src, user, 5 SECONDS, volume = 50))
+		return TRUE
+	visible_message(span_notice("[user] slices apart \the [src]."),
+		span_notice("You cut \the [src] apart with \the [tool]."),
+		span_hear("You hear welding."))
+	new /obj/item/stack/sheet/iron(loc, MEATSPIKE_IRONROD_REQUIREMENT)
+	qdel(src)
+	return TRUE
+
+/obj/structure/kitchenspike_frame/wrench_act(mob/living/user, obj/item/tool)
+	default_unfasten_wrench(user, tool)
+	return TRUE
+
+/obj/structure/kitchenspike_frame/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
+	add_fingerprint(user)
+	if(!istype(attacking_item, /obj/item/stack/rods))
+		return ..()
+	var/obj/item/stack/rods/used_rods = attacking_item
+	if(used_rods.get_amount() >= MEATSPIKE_IRONROD_REQUIREMENT)
+		used_rods.use(MEATSPIKE_IRONROD_REQUIREMENT)
+		balloon_alert(user, "meatspike built")
+		var/obj/structure/new_meatspike = new /obj/structure/kitchenspike(loc)
+		transfer_fingerprints_to(new_meatspike)
+		qdel(src)
+		return
+	balloon_alert(user, "[MEATSPIKE_IRONROD_REQUIREMENT] rods needed!")
+
+/obj/structure/kitchenspike_frame/examine(mob/user)
+	. = ..()
+	. += "It can be <b>welded</b> apart."
+	. += "You could attach <b>[MEATSPIKE_IRONROD_REQUIREMENT]</b> iron rods to it to create a <b>Meat Spike</b>."
+
+/obj/structure/kitchenspike_frame/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
+	if(isnull(held_item))
+		return NONE
+
+	var/message = ""
+	if(held_item.tool_behaviour == TOOL_WELDER)
+		message = "Deconstruct"
+	else if(held_item.tool_behaviour == TOOL_WRENCH)
+		message = "Bolt Down Frame"
+
+	if(!message)
+		return NONE
+	context[SCREENTIP_CONTEXT_LMB] = message
+	return CONTEXTUAL_SCREENTIP_SET
+
+/obj/structure/kitchenspike_frame/welder_act(mob/living/user, obj/item/tool)
 	if(!tool.tool_start_check(user, amount = 0))
 		return FALSE
 	to_chat(user, span_notice("You begin cutting \the [src] apart..."))
@@ -124,7 +175,7 @@
 	var/matrix/m180 = matrix(target.transform)
 	m180.Turn(180)
 	animate(target, transform = m180, time = 3)
-	target.pixel_y = target.base_pixel_y + PIXEL_Y_OFFSET_LYING
+	target.add_offsets(type, y_add = -6, animate = FALSE)
 	ADD_TRAIT(target, TRAIT_MOVE_UPSIDE_DOWN, REF(src))
 
 /obj/structure/kitchenspike/user_unbuckle_mob(mob/living/buckled_mob, mob/user)
@@ -156,7 +207,7 @@
 	var/matrix/m180 = matrix(buckled_mob.transform)
 	m180.Turn(180)
 	animate(buckled_mob, transform = m180, time = 3)
-	buckled_mob.pixel_y = buckled_mob.base_pixel_y + PIXEL_Y_OFFSET_LYING
+	buckled_mob.remove_offsets(type, animate = FALSE)
 	REMOVE_TRAIT(buckled_mob, TRAIT_MOVE_UPSIDE_DOWN, REF(src))
 
 /obj/structure/kitchenspike/atom_deconstruct(disassembled = TRUE)

@@ -6,7 +6,7 @@
 	icon_living = "headcrab"
 	icon_dead = "headcrab_dead"
 	icon_gib = null
-	mob_biotypes = list(MOB_ORGANIC, MOB_BEAST)
+	mob_biotypes = MOB_ORGANIC|MOB_BEAST
 	speak_chance = 1
 	speak_emote = list("growls")
 	speed = 1
@@ -25,7 +25,7 @@
 	melee_damage_upper = 5
 	retreat_distance = 5
 	minimum_distance = 5
-	attack_sound = 'sound/weapons/bite.ogg'
+	attack_sound = 'sound/items/weapons/bite.ogg'
 	gold_core_spawnable = HOSTILE_SPAWN
 	loot = list(/obj/item/stack/sheet/bone)
 	alert_sounds = list(

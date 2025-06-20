@@ -190,6 +190,7 @@
 	max_integrity = 100
 	seed = /obj/item/seeds/lavaland/polypore
 	wine_power = 20
+	foodtypes = VEGETABLES
 
 /obj/item/food/grown/ash_flora/Initialize(mapload)
 	. = ..()
@@ -238,9 +239,7 @@
 	icon_state = "cactus_fruit"
 	seed = /obj/item/seeds/lavaland/cactus
 	wine_power = 50
-	special_desc_requirement = EXAMINE_CHECK_JOB //SKYRAT EDIT
-	special_desc_jobs = list("Botanist") //SKYRAT EDIT
-	special_desc = "This flora is very nutritious and medicinal." //SKYRAT EDIT
+	foodtypes = FRUIT
 
 /obj/item/food/grown/ash_flora/seraka
 	name = "seraka cap"
@@ -404,17 +403,4 @@
 /obj/item/reagent_containers/cup/bowl/mushroom_bowl/update_icon_state()
 	if(!reagents.total_volume)
 		icon_state = "mushroom_bowl"
-	return ..()
-
-/obj/item/reagent_containers/cup/bowl/wood_bowl
-	name = "wooden bowl"
-	desc = "A bowl made out of wood. Primitive, but effective."
-	icon = 'icons/obj/mining_zones/ash_flora.dmi'
-	icon_state = "wood_bowl"
-	fill_icon_state = "fullbowl"
-	fill_icon = 'icons/obj/mining_zones/ash_flora.dmi'
-
-/obj/item/reagent_containers/cup/bowl/mushroom_bowl/update_icon_state()
-	if(!reagents.total_volume)
-		icon_state = "wood_bowl"
 	return ..()

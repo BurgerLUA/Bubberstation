@@ -9,6 +9,7 @@
 	icon_state = "bottle"
 	lefthand_file = 'icons/mob/inhands/items/drinks_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/items/drinks_righthand.dmi'
+	reagent_container_liquid_sound = SFX_DEFAULT_LIQUID_SLOSH
 
 	///Like Edible's food type, what kind of drink is this?
 	var/drink_type = NONE
@@ -18,12 +19,20 @@
 	var/gulp_size = 5
 	///Whether the 'bottle' is made of glass or not so that milk cartons dont shatter when someone gets hit by it.
 	var/isGlass = FALSE
+	///What kind of chem transfer method does this cup use. Defaults to INGEST
+	var/reagent_consumption_method = INGEST
+	///What sound does our consumption play on consuming from the container?
+	var/consumption_sound = 'sound/items/drink.ogg'
+
+/obj/item/reagent_containers/cup/Initialize(mapload, vol)
+	. = ..()
+	AddElement(/datum/element/reagents_item_heatable)
 
 /obj/item/reagent_containers/cup/examine(mob/user)
 	. = ..()
 	if(drink_type)
 		var/list/types = bitfield_to_list(drink_type, FOOD_FLAGS)
-		. += span_notice("It is [LOWER_TEXT(english_list(types))].")
+		. += span_notice("The label says it contains [LOWER_TEXT(english_list(types))] ingredients.")
 
 /**
  * Checks if the mob actually liked drinking this cup.
@@ -86,9 +95,9 @@
 	SEND_SIGNAL(src, COMSIG_GLASS_DRANK, target_mob, user)
 	SEND_SIGNAL(target_mob, COMSIG_GLASS_DRANK, src, user) // SKYRAT EDIT ADDITION - Hemophages can't casually drink what's not going to regenerate their blood
 	var/fraction = min(gulp_size/reagents.total_volume, 1)
-	reagents.trans_to(target_mob, gulp_size, transferred_by = user, methods = INGEST)
+	reagents.trans_to(target_mob, gulp_size, transferred_by = user, methods = reagent_consumption_method)
 	checkLiked(fraction, target_mob)
-	playsound(target_mob.loc,'sound/items/drink.ogg', rand(10,50), TRUE)
+	playsound(target_mob.loc, consumption_sound, rand(10,50), TRUE)
 	if(!iscarbon(target_mob))
 		return
 	var/mob/living/carbon/carbon_drinker = target_mob
@@ -117,8 +126,8 @@
 			to_chat(user, span_warning("[target] is full."))
 			return ITEM_INTERACT_BLOCKING
 
-		var/trans = reagents.trans_to(target, amount_per_transfer_from_this, transferred_by = user)
-		playsound(target.loc, pick('sound/effects/liquid_pour1.ogg', 'sound/effects/liquid_pour2.ogg', 'sound/effects/liquid_pour3.ogg'), 50)
+		var/trans = round(reagents.trans_to(target, amount_per_transfer_from_this, transferred_by = user), CHEMICAL_VOLUME_ROUNDING)
+		playsound(target.loc, SFX_LIQUID_POUR, 50, TRUE)
 		to_chat(user, span_notice("You transfer [trans] unit\s of the solution to [target]."))
 		SEND_SIGNAL(src, COMSIG_REAGENTS_CUP_TRANSFER_TO, target)
 		target.update_appearance()
@@ -133,7 +142,8 @@
 			to_chat(user, span_warning("[src] is full."))
 			return ITEM_INTERACT_BLOCKING
 
-		var/trans = target.reagents.trans_to(src, amount_per_transfer_from_this, transferred_by = user)
+		var/trans = round(target.reagents.trans_to(src, amount_per_transfer_from_this, transferred_by = user), CHEMICAL_VOLUME_ROUNDING)
+		playsound(target.loc, SFX_LIQUID_POUR, 50, TRUE)
 		to_chat(user, span_notice("You fill [src] with [trans] unit\s of the contents of [target]."))
 		SEND_SIGNAL(src, COMSIG_REAGENTS_CUP_TRANSFER_FROM, target)
 		target.update_appearance()
@@ -143,11 +153,11 @@
 
 /obj/item/reagent_containers/cup/interact_with_atom_secondary(atom/target, mob/living/user, list/modifiers)
 	if(user.combat_mode)
-		return ITEM_INTERACT_SKIP_TO_ATTACK
+		return NONE
 	if(!check_allowed_items(target, target_self = TRUE))
 		return NONE
 	if(!spillable)
-		return ITEM_INTERACT_BLOCKING
+		return NONE
 
 	if(target.is_drainable()) //A dispenser. Transfer FROM it TO us.
 		if(!target.reagents.total_volume)
@@ -158,13 +168,16 @@
 			to_chat(user, span_warning("[src] is full."))
 			return ITEM_INTERACT_BLOCKING
 
-		var/trans = target.reagents.trans_to(src, amount_per_transfer_from_this, transferred_by = user)
+		var/trans = round(target.reagents.trans_to(src, amount_per_transfer_from_this, transferred_by = user), CHEMICAL_VOLUME_ROUNDING)
+		playsound(target.loc, SFX_LIQUID_POUR, 50, TRUE)
 		to_chat(user, span_notice("You fill [src] with [trans] unit\s of the contents of [target]."))
+		SEND_SIGNAL(src, COMSIG_REAGENTS_CUP_TRANSFER_FROM, target)
+		target.update_appearance()
+		return ITEM_INTERACT_SUCCESS
 
-	target.update_appearance()
-	return ITEM_INTERACT_SUCCESS
+	return NONE
 
-/obj/item/reagent_containers/cup/attackby(obj/item/attacking_item, mob/user, params)
+/obj/item/reagent_containers/cup/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
 	var/hotness = attacking_item.get_temperature()
 	if(hotness && reagents)
 		reagents.expose_temperature(hotness)
@@ -181,7 +194,7 @@
 			return TRUE
 		var/cooling = (0 - reagents.chem_temp) * extinguisher.cooling_power * 2
 		reagents.expose_temperature(cooling)
-		to_chat(user, span_notice("You cool the [name] with the [attacking_item]!"))
+		to_chat(user, span_notice("You cool \the [src] with the [attacking_item]!"))
 		playsound(loc, 'sound/effects/extinguish.ogg', 75, TRUE, -3)
 		extinguisher.reagents.remove_all(1)
 		return TRUE
@@ -220,7 +233,7 @@
 
 /obj/item/reagent_containers/cup/beaker
 	name = "beaker"
-	desc = "A beaker. It can hold up to 60 units." //SKYRAT EDIT: Used to say can hold up to 50 units.
+	desc = "A beaker. It can hold up to 50 units."
 	icon = 'icons/obj/medical/chemical.dmi'
 	icon_state = "beaker"
 	inhand_icon_state = "beaker"
@@ -231,8 +244,7 @@
 	fill_icon_thresholds = list(0, 1, 20, 40, 60, 80, 100)
 	pickup_sound = 'sound/items/handling/beaker_pickup.ogg'
 	drop_sound = 'sound/items/handling/beaker_place.ogg'
-	volume = 60 //SKYRAT EDIT: Addition
-	possible_transfer_amounts = list(5,10,15,20,30,60) //SKYRAT EDIT: Addition
+	sound_vary = TRUE
 
 /obj/item/reagent_containers/cup/beaker/Initialize(mapload)
 	. = ..()
@@ -249,24 +261,22 @@
 
 /obj/item/reagent_containers/cup/beaker/large
 	name = "large beaker"
-	desc = "A large beaker. Can hold up to 120 units." //SKYRAT EDIT: Used to say Can hold up to 100 units.
+	desc = "A large beaker. Can hold up to 100 units."
 	icon_state = "beakerlarge"
 	custom_materials = list(/datum/material/glass= SHEET_MATERIAL_AMOUNT*1.25)
-	volume = 120 //SKYRAT EDIT: Original value (100)
+	volume = 100
 	amount_per_transfer_from_this = 10
-	//possible_transfer_amounts = list(5,10,15,20,25,30,50,100) //SKYRAT EDIT: Original Values
-	possible_transfer_amounts = list(5,10,15,20,30,40,60,120) //SKYRAT EDIT: New Values
+	possible_transfer_amounts = list(5,10,15,20,25,30,50,100)
 	fill_icon_thresholds = list(0, 1, 20, 40, 60, 80, 100)
 
 /obj/item/reagent_containers/cup/beaker/plastic
 	name = "x-large beaker"
-	desc = "An extra-large beaker. Can hold up to 150 units." //SKYRAT EDIT: Used to say Can hold up to 120 units
+	desc = "An extra-large beaker. Can hold up to 120 units."
 	icon_state = "beakerwhite"
 	custom_materials = list(/datum/material/glass=SHEET_MATERIAL_AMOUNT*1.25, /datum/material/plastic=SHEET_MATERIAL_AMOUNT * 1.5)
-	volume = 150 //SKYRAT EDIT: Original Value (120)
+	volume = 120
 	amount_per_transfer_from_this = 10
-	//possible_transfer_amounts = list(5,10,15,20,25,30,60,120) //SKYRAT EDIT: Original values
-	possible_transfer_amounts = list(5,10,15,20,25,30,50,75,150) //SKYRAT EDIT: New Values
+	possible_transfer_amounts = list(5,10,15,20,25,30,60,120)
 	fill_icon_thresholds = list(0, 1, 10, 20, 40, 60, 80, 100)
 
 /obj/item/reagent_containers/cup/beaker/meta
@@ -349,6 +359,9 @@
 /obj/item/reagent_containers/cup/beaker/synthflesh
 	list_reagents = list(/datum/reagent/medicine/c2/synthflesh = 50)
 
+/obj/item/reagent_containers/cup/beaker/synthflesh/named
+	name = "synthflesh beaker"
+
 /obj/item/reagent_containers/cup/bucket
 	name = "bucket"
 	desc = "It's a bucket. You can squeeze a mop's contents into it by using right-click." //SKYRAT EDIT CHANGE - ORIGINAL: desc = "It's a bucket."
@@ -397,9 +410,7 @@
 	melee = 10
 	acid = 50
 
-// SKYRAT EDIT CHANGE START - LIQUIDS
-/* Original
-/obj/item/reagent_containers/cup/bucket/attackby(obj/O, mob/user, params)
+/obj/item/reagent_containers/cup/bucket/attackby(obj/O, mob/user, list/modifiers, list/attack_modifiers)
 	if(istype(O, /obj/item/mop))
 		if(reagents.total_volume < 1)
 			user.balloon_alert(user, "empty!")
@@ -408,35 +419,31 @@
 			user.balloon_alert(user, "doused [O]")
 			playsound(loc, 'sound/effects/slosh.ogg', 25, TRUE)
 		return
-*/
-/obj/item/reagent_containers/cup/bucket/attackby(obj/mop, mob/living/user, params)
-	if(istype(mop, /obj/item/mop))
-		var/is_right_clicking = LAZYACCESS(params2list(params), RIGHT_CLICK)
-		if(is_right_clicking)
-			if(mop.reagents.total_volume == 0)
-				user.balloon_alert(user, "mop is dry!")
-				return
-			if(reagents.total_volume == reagents.maximum_volume)
-				user.balloon_alert(user, "mop is full!")
-				return
-			mop.reagents.remove_all(mop.reagents.total_volume * SQUEEZING_DISPERSAL_RATIO)
-			mop.reagents.trans_to(src, mop.reagents.total_volume, transferred_by = user)
-			user.balloon_alert(user, "mop squeezed")
-		else
-			if(reagents.total_volume < 1)
-				user.balloon_alert(user, "container empty!")
-			else
-				reagents.trans_to(mop, 5, transferred_by = user)
-				user.balloon_alert(user, "mop wet")
-				playsound(loc, 'sound/effects/slosh.ogg', 25, TRUE)
-
-	else if(isprox(mop)) //This works with wooden buckets for now. Somewhat unintended, but maybe someone will add sprites for it soon(TM)
-		to_chat(user, span_notice("You add [mop] to [src]."))
-		qdel(mop)
+	else if(isprox(O)) //This works with wooden buckets for now. Somewhat unintended, but maybe someone will add sprites for it soon(TM)
+		to_chat(user, span_notice("You add [O] to [src]."))
+		qdel(O)
 		var/obj/item/bot_assembly/cleanbot/new_cleanbot_ass = new(null, src)
 		user.put_in_hands(new_cleanbot_ass)
 		return
-// SKYRAT EDIT CHANGE END - LIQUIDS
+
+	return ..()
+
+// BUBBER EDIT ADDITION BEGIN - LIQUIDS
+/obj/item/reagent_containers/cup/bucket/item_interaction_secondary(mob/living/user, obj/item/tool, list/modifiers)
+	if(istype(tool, /obj/item/mop))
+		if(tool.reagents.total_volume == 0)
+			user.balloon_alert(user, "mop is dry!")
+			return ITEM_INTERACT_BLOCKING
+		if(reagents.total_volume == reagents.maximum_volume)
+			user.balloon_alert(user, "container is full!")
+			return ITEM_INTERACT_BLOCKING
+		tool.reagents.remove_all(tool.reagents.total_volume * SQUEEZING_DISPERSAL_RATIO)
+		tool.reagents.trans_to(src, tool.reagents.total_volume, transferred_by = user)
+		user.balloon_alert(user, "mop squeezed")
+		return ITEM_INTERACT_SUCCESS
+
+	. = ..()
+// BUBBER EDIT ADDITION END - LIQUIDS
 
 /obj/item/reagent_containers/cup/bucket/equipped(mob/user, slot)
 	. = ..()
@@ -521,11 +528,17 @@
 	if(grinded)
 		to_chat(user, span_warning("There is something inside already!"))
 		return
-	if(I.juice_typepath || I.grind_results)
+	if(!I.blend_requirements(src))
+		to_chat(user, span_warning("Cannot grind this!"))
+		return
+	if(length(I.grind_results) || I.reagents?.total_volume)
 		I.forceMove(src)
 		grinded = I
-		return
-	to_chat(user, span_warning("You can't grind this!"))
+
+/obj/item/reagent_containers/cup/mortar/blended(obj/item/blended_item, grinded)
+	src.grinded = null
+
+	return ..()
 
 /obj/item/reagent_containers/cup/mortar/proc/grind_item(obj/item/item, mob/living/carbon/human/user)
 	if(item.flags_1 & HOLOGRAM_1)
@@ -535,13 +548,12 @@
 
 	if(!item.grind(reagents, user))
 		if(isstack(item))
-			to_chat(usr, span_notice("[src] attempts to grind as many pieces of [item] as possible."))
+			to_chat(user, span_notice("[src] attempts to grind as many pieces of [item] as possible."))
 		else
 			to_chat(user, span_danger("You fail to grind [item]."))
 		return
+
 	to_chat(user, span_notice("You grind [item] into a nice powder."))
-	grinded = null
-	QDEL_NULL(item)
 
 /obj/item/reagent_containers/cup/mortar/proc/juice_item(obj/item/item, mob/living/carbon/human/user)
 	if(item.flags_1 & HOLOGRAM_1)
@@ -552,9 +564,8 @@
 	if(!item.juice(reagents, user))
 		to_chat(user, span_notice("You fail to juice [item]."))
 		return
+
 	to_chat(user, span_notice("You juice [item] into a fine liquid."))
-	grinded = null
-	QDEL_NULL(item)
 
 //Coffeepots: for reference, a standard cup is 30u, to allow 20u for sugar/sweetener/milk/creamer
 /obj/item/reagent_containers/cup/coffeepot
@@ -570,7 +581,7 @@
 	desc = "The most advanced coffeepot the eggheads could cook up: sleek design; graduated lines; connection to a pocket dimension for coffee containment; yep, it's got it all. Contains 8 standard cups."
 	volume = 240
 	icon_state = "coffeepot_bluespace"
-	fill_icon_thresholds = list(0)
+	fill_icon_thresholds = null
 
 ///Test tubes created by chem master and pandemic and placed in racks
 /obj/item/reagent_containers/cup/tube

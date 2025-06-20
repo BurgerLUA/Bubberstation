@@ -44,7 +44,7 @@
 
 /obj/item/pinpointer/proc/toggle_on()
 	active = !active
-	playsound(src, 'sound/items/screwdriver2.ogg', 50, TRUE)
+	playsound(src, 'sound/items/tools/screwdriver2.ogg', 50, TRUE)
 	if(active)
 		START_PROCESSING(SSfastprocess, src)
 	else
@@ -95,7 +95,7 @@
 	desc = "A handheld tracking device that points to crew suit sensors."
 	icon_state = "pinpointer_crew"
 	worn_icon_state = "pinpointer_crew"
-	custom_price = PAYCHECK_CREW * 4
+	custom_price = PAYCHECK_CREW * 6
 	custom_premium_price = PAYCHECK_CREW * 6
 	var/has_owner = FALSE
 	var/pinpointer_owner = null
@@ -105,6 +105,8 @@
 	var/turf/here = get_turf(src)
 	var/turf/there = get_turf(H)
 	if(here && there && (there.z == here.z || (is_station_level(here.z) && is_station_level(there.z)))) // Device and target should be on the same level or different levels of the same station
+		if (H in GLOB.nanite_sensors_list) // BUBBER ADDITION START - NANITES
+			return TRUE
 		if (istype(H.w_uniform, /obj/item/clothing/under))
 			var/obj/item/clothing/under/U = H.w_uniform
 			if(U.has_sensor && (U.sensor_mode >= SENSOR_COORDS || ignore_suit_sensor_level)) // Suit sensors must be on maximum or a contractor pinpointer
@@ -152,7 +154,7 @@
 		return
 	if(isnull(names[pinpoint_target]))
 		return
-	if(QDELETED(src) || !user || !user.is_holding(src) || user.incapacitated())
+	if(QDELETED(src) || !user || !user.is_holding(src) || user.incapacitated)
 		return
 	target = names[pinpoint_target]
 	toggle_on()
@@ -187,16 +189,6 @@
 	if(istype(mob_holder))
 		. += "Its pair is being held by [mob_holder]."
 		return
-
-/obj/item/storage/box/pinpointer_pairs
-	name = "pinpointer pair box"
-
-/obj/item/storage/box/pinpointer_pairs/PopulateContents()
-	var/obj/item/pinpointer/pair/A = new(src)
-	var/obj/item/pinpointer/pair/B = new(src)
-
-	A.other_pair = B
-	B.other_pair = A
 
 /obj/item/pinpointer/shuttle
 	name = "bounty shuttle pinpointer"

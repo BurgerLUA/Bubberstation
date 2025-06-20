@@ -45,7 +45,7 @@
 		//we're below minimum, turn off
 		shocker_on = FALSE
 		update_appearance()
-		play_lewd_sound(src, activate_sound, 75, TRUE, -1)
+		conditional_pref_sound(src, activate_sound, 75, TRUE, -1)
 
 /obj/item/kinky_shocker/examine(mob/user)
 	. = ..()
@@ -91,7 +91,7 @@
 	if(cell && cell.charge >= cell_hit_cost)
 		shocker_on = !shocker_on
 		to_chat(user, span_notice("You turn the shocker [shocker_on? "on. Buzz!" : "off."]"))
-		play_lewd_sound(user, shocker_on ? 'sound/weapons/magin.ogg' : 'sound/weapons/magout.ogg', 40, TRUE)
+		conditional_pref_sound(user, shocker_on ? 'sound/items/weapons/magin.ogg' : 'sound/items/weapons/magout.ogg', 40, TRUE)
 	else
 		shocker_on = FALSE
 		if(!cell)
@@ -108,10 +108,13 @@
 
 /obj/item/kinky_shocker/attack(mob/living/target, mob/living/user)
 	. = ..()
-	var/mob/living/carbon/human/carbon_target = target
-	if(!carbon_target && !iscyborg(target))
-		return
 	if(target.stat == DEAD)
+		return
+
+	var/mob/living/carbon/human/carbon_target
+	if(ishuman(target))
+		carbon_target = target
+	else if(!iscyborg(target))
 		return
 
 	if(!shocker_on)
@@ -125,8 +128,8 @@
 	var/message = ""
 	switch(user.zone_selected) //to let code know what part of body we gonna tickle
 		if(BODY_ZONE_PRECISE_GROIN)
-			var/obj/item/organ/external/genital/penis = target.get_organ_slot(ORGAN_SLOT_PENIS)
-			var/obj/item/organ/external/genital/vagina = target.get_organ_slot(ORGAN_SLOT_VAGINA)
+			var/obj/item/organ/genital/penis = target.get_organ_slot(ORGAN_SLOT_PENIS)
+			var/obj/item/organ/genital/vagina = target.get_organ_slot(ORGAN_SLOT_VAGINA)
 			var/penis_message = (user == target) ? pick("leans [src] against [target.p_their()] penis, letting it shock [target.p_them()]. Ouch...",
 					"shocks [target.p_their()] penis with [src]") \
 				: pick("uses [src] to shock [target]'s penis",
@@ -162,7 +165,7 @@
 				return
 
 		if(BODY_ZONE_CHEST)
-			var/obj/item/organ/external/genital/breasts = target.get_organ_slot(ORGAN_SLOT_BREASTS)
+			var/obj/item/organ/genital/breasts = target.get_organ_slot(ORGAN_SLOT_BREASTS)
 			if(breasts?.is_exposed())
 				message = (user == target) ? pick("leans [src] against [target.p_their()] breasts, letting it shock [target.p_them()].",
 						"shocks [target.p_their()] tits with [src]") \
@@ -180,10 +183,10 @@
 				return
 
 		if(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM)
-			if(!carbon_target?.has_arms())
+			if(carbon_target && !carbon_target.has_arms())
 				to_chat(user, span_danger("Looks like [target] doesn't have any arms!"))
 				return
-			if(!carbon_target?.is_hands_uncovered())
+			if(carbon_target && !carbon_target.is_hands_uncovered())
 				to_chat(user, span_danger("Looks like [target]'s arms are covered!"))
 				return
 			var/arm = user.zone_selected == BODY_ZONE_L_ARM ? "left arm" : "right arm"
@@ -194,7 +197,7 @@
 					"leans [src] against [target]'s [arm], turning it on")
 
 		if(BODY_ZONE_HEAD)
-			if(!carbon_target?.is_head_uncovered())
+			if(carbon_target && !carbon_target.is_head_uncovered())
 				to_chat(user, span_danger("Looks like [target]'s head is covered!"))
 				return
 			message = (user == target) ? pick("leans [src] against [target.p_their()] head, letting it shock [target.p_them()]. Ouch! Why would [target.p_they()] do that?!",
@@ -204,10 +207,10 @@
 					"leans [src] against [target]'s neck, turning it on")
 
 		if(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
-			if(!carbon_target?.has_feet())
+			if(carbon_target && !carbon_target.has_feet())
 				to_chat(user, span_danger("Looks like [target] doesn't have any legs!"))
 				return
-			if(!carbon_target?.is_barefoot())
+			if(carbon_target && !carbon_target.is_barefoot())
 				to_chat(user, span_danger("Looks like [target]'s toes are covered!"))
 				return
 			var/leg = user.zone_selected == BODY_ZONE_L_LEG ? "left leg" : "right leg"
@@ -221,7 +224,7 @@
 			return
 
 	user.visible_message(span_purple("[user] [message]!"))
-	play_lewd_sound(loc, 'sound/weapons/taserhit.ogg', 70, 1, -1)
+	conditional_pref_sound(loc, 'sound/items/weapons/taserhit.ogg', 70, 1, -1)
 	deductcharge(cell_hit_cost)
 	if(prob(80))
 		target.try_lewd_autoemote(pick("twitch", "twitch_s", "shiver", "scream"))

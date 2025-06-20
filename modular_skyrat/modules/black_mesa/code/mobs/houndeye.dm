@@ -6,7 +6,7 @@
 	icon_living = "houndeye"
 	icon_dead = "houndeye_dead"
 	icon_gib = null
-	mob_biotypes = list(MOB_ORGANIC, MOB_BEAST)
+	mob_biotypes = MOB_ORGANIC|MOB_BEAST
 	environment_smash = ENVIRONMENT_SMASH_STRUCTURES
 	speak_chance = 1
 	speak_emote = list("growls")
@@ -20,7 +20,7 @@
 	harm_intent_damage = 10
 	melee_damage_lower = 20
 	melee_damage_upper = 20
-	attack_sound = 'sound/weapons/bite.ogg'
+	attack_sound = 'sound/items/weapons/bite.ogg'
 	gold_core_spawnable = HOSTILE_SPAWN
 	//Since those can survive on Xen, I'm pretty sure they can thrive on any atmosphere
 

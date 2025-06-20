@@ -139,8 +139,8 @@
 
 	switch(user.zone_selected) //to let code know what part of body we gonna vibe
 		if(BODY_ZONE_PRECISE_GROIN)
-			var/obj/item/organ/external/genital/penis = target.get_organ_slot(ORGAN_SLOT_PENIS)
-			var/obj/item/organ/external/genital/vagina = target.get_organ_slot(ORGAN_SLOT_VAGINA)
+			var/obj/item/organ/genital/penis = target.get_organ_slot(ORGAN_SLOT_PENIS)
+			var/obj/item/organ/genital/vagina = target.get_organ_slot(ORGAN_SLOT_VAGINA)
 			var/penis_message = (user == target) ? pick("massages their penis with the [src]",
 					"[vibration_adj] teases their penis with [src]") \
 				: pick("[vibration_adj] massages [target]'s penis with [src]",
@@ -167,7 +167,7 @@
 				target.try_lewd_autoemote(pick("twitch_s", "moan", "blush"))
 
 		if(BODY_ZONE_CHEST)
-			var/obj/item/organ/external/genital/breasts = target.get_organ_slot(ORGAN_SLOT_BREASTS)
+			var/obj/item/organ/genital/breasts = target.get_organ_slot(ORGAN_SLOT_BREASTS)
 			if(breasts?.is_exposed())
 				var/breasts_or_nipples = breasts ? ORGAN_SLOT_BREASTS : ORGAN_SLOT_NIPPLES
 				message = (user == target) ? pick("massages their [breasts_or_nipples] with the [src]",
@@ -187,7 +187,7 @@
 		else
 			return
 	user.visible_message(span_purple("[user] [message]!"))
-	play_lewd_sound(loc, 'modular_skyrat/modules/modular_items/lewd_items/sounds/vibrate.ogg', 10, TRUE)
+	conditional_pref_sound(loc, 'modular_skyrat/modules/modular_items/lewd_items/sounds/vibrate.ogg', 10, TRUE)
 
 /obj/item/clothing/sextoy/vibrator/attack_self(mob/user, obj/item/attack_item)
 	toggle_mode()
@@ -208,22 +208,22 @@
 		if(VIB_OFF)
 			vibration_mode = VIB_LOW
 			toy_on = TRUE
-			play_lewd_sound(loc, 'sound/weapons/magin.ogg', 20, TRUE)
+			conditional_pref_sound(loc, 'sound/items/weapons/magin.ogg', 20, TRUE)
 			soundloop1.start()
 		if(VIB_LOW)
 			vibration_mode = VIB_MEDIUM
-			play_lewd_sound(loc, 'sound/weapons/magin.ogg', 20, TRUE)
+			conditional_pref_sound(loc, 'sound/items/weapons/magin.ogg', 20, TRUE)
 			soundloop1.stop()
 			soundloop2.start()
 		if(VIB_MEDIUM)
 			vibration_mode = VIB_HIGH
-			play_lewd_sound(loc, 'sound/weapons/magin.ogg', 20, TRUE)
+			conditional_pref_sound(loc, 'sound/items/weapons/magin.ogg', 20, TRUE)
 			soundloop2.stop()
 			soundloop3.start()
 		if(VIB_HIGH)
 			vibration_mode = VIB_OFF
 			toy_on = FALSE
-			play_lewd_sound(loc, 'sound/weapons/magout.ogg', 20, TRUE)
+			conditional_pref_sound(loc, 'sound/items/weapons/magout.ogg', 20, TRUE)
 			soundloop3.stop()
 
 #undef DEFAULT_AROUSAL_INCREASE

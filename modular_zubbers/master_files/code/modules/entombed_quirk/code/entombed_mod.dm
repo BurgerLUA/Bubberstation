@@ -4,14 +4,12 @@
 	extended_desc = "Some great aspect of someone's past has permanently bound them to this device, for better or worse."
 
 	default_skin = "standard"
-	armor_type = /datum/armor/mod_entombed
+	armor_type = /datum/armor/mod_theme_civilian
 	resistance_flags = FIRE_PROOF | ACID_PROOF // It is better to die for the Emperor than live for yourself.
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
-	siemens_coefficient = 0
-	complexity_max = DEFAULT_MAX_COMPLEXITY - 5
+	complexity_max = DEFAULT_MAX_COMPLEXITY - 2 // Sets the modsuit complexity to a total of 13 (functionally 10 as the default storage module consumes 3. ) to keep it in line with the civilian modsuit.
 	charge_drain = DEFAULT_CHARGE_DRAIN
-	slowdown_inactive = 2.5 // very slow because the quirk infers you rely on this to move/exist
-	slowdown_active = 0.95
+	slowdown_deployed = 0.95
 	inbuilt_modules = list(
 		/obj/item/mod/module/joint_torsion/entombed
 	)
@@ -19,16 +17,6 @@
 		/obj/item/tank/internals,
 		/obj/item/flashlight,
 	)
-
-/datum/armor/mod_entombed
-	melee = 30
-	bullet = 30
-	laser = 30
-	energy = 30
-	bio = 100
-	fire = 30
-	acid = 30
-	wound = 30
 
 /obj/item/mod/module/joint_torsion/entombed
 	name = "internal joint torsion adaptation"
@@ -50,6 +38,8 @@
 	applied_modules = list(
 		/obj/item/mod/module/storage/large_capacity
 	)
+
+// CUSTOM BEHAVIOR
 
 /obj/item/mod/control/pre_equipped/entombed/canStrip(mob/who)
 	return TRUE //you can always try, and it'll hit doStrip below
@@ -76,7 +66,7 @@
 			if (istype(part, /obj/item/clothing)) // make sure it's a modsuit piece and not a module, we retract those too
 				if (!istype(part, /obj/item/clothing/head/mod)) // they can only retract the helmet, them's the sticks
 					human_user.balloon_alert(human_user, "part is fused to you - can't retract!")
-					playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+					playsound(src, 'sound/machines/scanner/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 					return
 	return ..()
 
@@ -87,10 +77,15 @@
 		//if we're deploy_locked, just disable this functionality entirely
 		if (tomb_quirk && tomb_quirk.deploy_locked)
 			human_user.balloon_alert(human_user, "you can only retract your helmet, and only manually!")
-			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+			playsound(src, 'sound/machines/scanner/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 			return
 	return ..()
 
 /obj/item/mod/control/pre_equipped/entombed/Initialize(mapload, new_theme, new_skin, new_core)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NODROP, QUIRK_TRAIT)
+
+/obj/item/mod/control/pre_equipped/entombed/dropped(mob/user)
+	. = ..()
+	// we do this so that in the rare event that someone gets gibbed/destroyed, their suit can be retrieved easily w/o requiring admin intervention
+	REMOVE_TRAIT(src, TRAIT_NODROP, QUIRK_TRAIT)

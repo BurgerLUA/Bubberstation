@@ -121,7 +121,7 @@
 	/// The person able to see this tear.
 	var/mob/living/carbon/seer
 
-/obj/effect/client_image_holder/phobetor/Initialize()
+/obj/effect/client_image_holder/phobetor/Initialize(mapload)
 	. = ..()
 	created_on = world.time
 
@@ -166,5 +166,5 @@
 		to_chat(user, span_warning("Your destination is being watched."))
 		return
 	to_chat(user, span_notice("You slip unseen through [src]."))
-	user.playsound_local(null, 'sound/magic/wand_teleport.ogg', 30, FALSE, pressure_affected = FALSE)
+	user.playsound_local(null, 'sound/effects/magic/wand_teleport.ogg', 30, FALSE, pressure_affected = FALSE)
 	user.forceMove(get_turf(linked_to))

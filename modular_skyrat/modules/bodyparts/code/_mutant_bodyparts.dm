@@ -11,13 +11,15 @@
 /obj/item/bodypart/proc/check_mutant_compatability()
 	return
 
-/obj/item/bodypart/leg/right
+/obj/item/bodypart/leg // Abstract type, if something retrieves null from this it's your fault
 	/// This is used in digitigrade legs, when this leg is swapped out with the digitigrade version.
-	var/digitigrade_type = /obj/item/bodypart/leg/right/digitigrade
+	var/digitigrade_type
+
+/obj/item/bodypart/leg/right
+	digitigrade_type = /obj/item/bodypart/leg/right/digitigrade
 
 /obj/item/bodypart/leg/left
-	/// This is used in digitigrade legs, when this leg is swapped out with the digitigrade version.
-	var/digitigrade_type = /obj/item/bodypart/leg/left/digitigrade
+	digitigrade_type = /obj/item/bodypart/leg/left/digitigrade
 
 
 /// General mutant bodyparts. Used in most mutant species.
@@ -39,8 +41,8 @@
 	limb_id = SPECIES_MAMMAL
 	unarmed_attack_verbs = list("slash")
 	unarmed_attack_effect = ATTACK_EFFECT_CLAW
-	unarmed_attack_sound = 'sound/weapons/slash.ogg'
-	unarmed_miss_sound = 'sound/weapons/slashmiss.ogg'
+	unarmed_attack_sound = 'sound/items/weapons/slash.ogg'
+	unarmed_miss_sound = 'sound/items/weapons/slashmiss.ogg'
 
 
 /obj/item/bodypart/arm/right/mutant
@@ -48,8 +50,8 @@
 	limb_id = SPECIES_MAMMAL
 	unarmed_attack_verbs = list("slash")
 	unarmed_attack_effect = ATTACK_EFFECT_CLAW
-	unarmed_attack_sound = 'sound/weapons/slash.ogg'
-	unarmed_miss_sound = 'sound/weapons/slashmiss.ogg'
+	unarmed_attack_sound = 'sound/items/weapons/slash.ogg'
+	unarmed_miss_sound = 'sound/items/weapons/slashmiss.ogg'
 
 
 /obj/item/bodypart/leg/left/mutant

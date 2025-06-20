@@ -32,6 +32,7 @@
 		/obj/item/food/meatball = 1
 	)
 	result = /obj/item/food/salad/validsalad
+	added_foodtypes = FRIED
 	category = CAT_SALAD
 
 /datum/crafting_recipe/food/melonfruitbowl
@@ -67,7 +68,6 @@
 		/obj/item/food/grown/apple = 2,
 		/obj/item/food/grown/grapes = 2,
 		/obj/item/food/grown/banana = 2,
-		/obj/item/food/watermelonslice = 2
 
 	)
 	result = /obj/item/food/salad/jungle

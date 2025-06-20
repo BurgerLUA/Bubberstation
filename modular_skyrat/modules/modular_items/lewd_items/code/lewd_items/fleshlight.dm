@@ -66,7 +66,7 @@
 		to_chat(user, span_danger("[target] doesn't want you to do that!"))
 		return
 
-	var/obj/item/organ/external/genital/penis = target.get_organ_slot(ORGAN_SLOT_PENIS)
+	var/obj/item/organ/genital/penis = target.get_organ_slot(ORGAN_SLOT_PENIS)
 	if(!penis?.is_exposed())
 		to_chat(user, span_danger("Looks like [target]'s groin is covered!"))
 		return
@@ -83,7 +83,7 @@
 	target.adjust_arousal(6)
 	target.adjust_pleasure(9)
 	user.visible_message(span_purple("[user] [message]!"))
-	play_lewd_sound(loc, pick('modular_skyrat/modules/modular_items/lewd_items/sounds/bang1.ogg',
+	conditional_pref_sound(loc, pick('modular_skyrat/modules/modular_items/lewd_items/sounds/bang1.ogg',
 						'modular_skyrat/modules/modular_items/lewd_items/sounds/bang2.ogg',
 						'modular_skyrat/modules/modular_items/lewd_items/sounds/bang3.ogg',
 						'modular_skyrat/modules/modular_items/lewd_items/sounds/bang4.ogg',

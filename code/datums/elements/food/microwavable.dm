@@ -41,9 +41,11 @@
 		result = new result_typepath(result_loc, stack_source.amount)
 	else
 		result = new result_typepath(result_loc)
+		result.set_custom_materials(source.custom_materials)
 
 	var/efficiency = istype(used_microwave) ? used_microwave.efficiency : 1
 	SEND_SIGNAL(result, COMSIG_ITEM_MICROWAVE_COOKED, source, efficiency)
+	SEND_SIGNAL(source, COMSIG_ITEM_MICROWAVE_COOKED_FROM, result, efficiency)
 
 	if(IS_EDIBLE(result) && (result_typepath != default_typepath))
 		BLACKBOX_LOG_FOOD_MADE(result.type)

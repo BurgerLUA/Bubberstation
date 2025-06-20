@@ -110,10 +110,6 @@
 	. = ..()
 	AddElement(/datum/element/web_walker, /datum/movespeed_modifier/fast_web)
 
-/mob/living/basic/spider/giant/hunter/mold //skyrat edit: exists to make molds not spam the world with simple mobs
-	basic_mob_flags = DEL_ON_DEATH
-	habitable_atmos = null
-	
 ///Used in the caves away mission.
 /mob/living/basic/spider/giant/hunter/away_caves
 	minimum_survivable_temperature = 0
@@ -276,7 +272,7 @@
 	obj_damage = 15
 	speed = 5
 	player_speed_modifier = -4
-	menu_description = "Extremly tanky with very poor offence. Able to self heal and lay reflective silk screens."
+	menu_description = "Extremely tanky with very poor offence. Able to self heal and lay reflective silk screens."
 
 /mob/living/basic/spider/giant/tank/Initialize(mapload)
 	. = ..()
@@ -612,6 +608,6 @@
 
 /mob/living/basic/spider/giant/sgt_araneus/Initialize(mapload)
 	. = ..()
-	AddElement(/datum/element/pet_bonus, "chitters proudly!")
+	AddElement(/datum/element/pet_bonus, "chitter")
 	AddElement(/datum/element/ai_retaliate)
 	ADD_TRAIT(src, TRAIT_VENTCRAWLER_ALWAYS, INNATE_TRAIT)

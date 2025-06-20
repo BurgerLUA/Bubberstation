@@ -1,6 +1,4 @@
 import { useState } from 'react';
-
-import { resolveAsset } from '../assets';
 import {
   Button,
   Divider,
@@ -8,7 +6,9 @@ import {
   Image,
   Section,
   Stack,
-} from '../components';
+} from 'tgui-core/components';
+
+import { resolveAsset } from '../assets';
 import { PowerInfo } from './AntagInfoBloodsucker';
 
 type PowerDetailsProps = {
@@ -61,8 +61,20 @@ export const PowerDetails = (props: PowerDetailsProps) => {
           <Divider vertical />
         </Stack.Item>
         <Stack.Divider />
-        <Stack.Item grow fontSize="16px">
-          {selectedPower && selectedPower.power_explanation}
+        <Stack.Item grow fontSize="16px" width="40%">
+          {selectedPower?.power_explanation?.length &&
+            selectedPower.power_explanation.map((line, index) => {
+              if (index === 0) {
+                return line;
+              } else {
+                return (
+                  <>
+                    <br />
+                    {line}
+                  </>
+                );
+              }
+            })}
         </Stack.Item>
       </Stack>
     </Section>

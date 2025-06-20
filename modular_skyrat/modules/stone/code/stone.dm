@@ -21,6 +21,7 @@ GLOBAL_LIST_INIT(stone_recipes, list ( \
 	new/datum/stack_recipe("stone brick wall", /turf/closed/wall/mineral/stone, 5, crafting_flags = CRAFT_CHECK_DENSITY | CRAFT_ONE_PER_TURF | CRAFT_ON_SOLID_GROUND | CRAFT_APPLIES_MATS, category = CAT_STRUCTURE), \
 	new/datum/stack_recipe("stone brick tile", /obj/item/stack/tile/mineral/stone, 1, 4, 20, category = CAT_TILES),
 	new/datum/stack_recipe("millstone", /obj/structure/millstone, 6, crafting_flags = CRAFT_CHECK_DENSITY | CRAFT_ONE_PER_TURF | CRAFT_ON_SOLID_GROUND, category = CAT_STRUCTURE),
+	new/datum/stack_recipe("stone cauldron", /obj/machinery/cauldron, 5, crafting_flags = CRAFT_CHECK_DENSITY | CRAFT_ONE_PER_TURF | CRAFT_ON_SOLID_GROUND, category = CAT_STRUCTURE),
 	new/datum/stack_recipe("stone stove", /obj/machinery/primitive_stove, 5, crafting_flags = CRAFT_CHECK_DENSITY | CRAFT_ONE_PER_TURF | CRAFT_ON_SOLID_GROUND, category = CAT_STRUCTURE),
 	new/datum/stack_recipe("stone oven", /obj/machinery/oven/stone, 5, crafting_flags = CRAFT_CHECK_DENSITY | CRAFT_ONE_PER_TURF | CRAFT_ON_SOLID_GROUND, category = CAT_STRUCTURE),
 	new/datum/stack_recipe("stone griddle", /obj/machinery/griddle/stone, 5, crafting_flags = CRAFT_CHECK_DENSITY | CRAFT_ONE_PER_TURF | CRAFT_ON_SOLID_GROUND, category = CAT_STRUCTURE),
@@ -38,7 +39,7 @@ GLOBAL_LIST_INIT(stone_recipes, list ( \
 	value_per_unit = 0.005
 	beauty_modifier = 0.01
 	color = "#59595a"
-	greyscale_colors = "#59595a"
+	greyscale_color = "#59595a"
 	value_per_unit = 0.0025
 	armor_modifiers = list(MELEE = 0.75, BULLET = 0.5, LASER = 1.25, ENERGY = 0.5, BOMB = 0.5, BIO = 0.25, FIRE = 1.5, ACID = 1.5)
 	beauty_modifier = 0.3
@@ -62,7 +63,7 @@ GLOBAL_LIST_INIT(stone_recipes, list ( \
 /obj/item/stack/stone/attackby(obj/item/attacking_item, mob/user, params)
 	if((attacking_item.tool_behaviour != TOOL_MINING) && !(istype(attacking_item, /obj/item/chisel)))
 		return ..()
-	playsound(src, 'sound/effects/picaxe1.ogg', 50, TRUE)
+	playsound(src, 'sound/effects/pickaxe/picaxe1.ogg', 50, TRUE)
 	balloon_alert_to_viewers("cutting...")
 	if(!do_after(user, 5 SECONDS, target = src))
 		balloon_alert_to_viewers("stopped cutting")

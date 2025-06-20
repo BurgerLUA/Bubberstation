@@ -83,7 +83,7 @@ GLOBAL_LIST_EMPTY(gravity_generators)
 		main_part = null
 	return ..()
 
-/obj/machinery/gravity_generator/part/attackby(obj/item/weapon, mob/user, params)
+/obj/machinery/gravity_generator/part/attackby(obj/item/weapon, mob/user, list/modifiers, list/attack_modifiers)
 	if(!main_part)
 		return
 	return main_part.attackby(weapon, user)
@@ -235,7 +235,7 @@ GLOBAL_LIST_EMPTY(gravity_generators)
 			. += span_notice("The new plating just needs to be <b>bolted</b> into place now.")
 
 // Fixing the gravity generator.
-/obj/machinery/gravity_generator/main/attackby(obj/item/weapon, mob/user, params)
+/obj/machinery/gravity_generator/main/attackby(obj/item/weapon, mob/user, list/modifiers, list/attack_modifiers)
 	if(machine_stat & BROKEN)
 		switch(broken_state)
 			if(GRAV_NEEDS_SCREWDRIVER)
@@ -289,7 +289,7 @@ GLOBAL_LIST_EMPTY(gravity_generators)
 
 	return data
 
-/obj/machinery/gravity_generator/main/ui_act(action, params)
+/obj/machinery/gravity_generator/main/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
 	if(.)
 		return
@@ -407,7 +407,7 @@ GLOBAL_LIST_EMPTY(gravity_generators)
 /// Shake everyone on the z level to let them know that gravity was enagaged/disengaged.
 /obj/machinery/gravity_generator/main/proc/shake_everyone()
 	var/turf/T = get_turf(src)
-	var/sound/alert_sound = sound('sound/effects/alert.ogg')
+	var/sound/alert_sound = on ? 'modular_zubbers/sound/machines/gravgen_up.ogg' : 'modular_zubbers/sound/machines/gravgen_down.ogg' // BUBBER EDIT CHANGE - GRAVGEN SOUNDS
 	for(var/mob/mobs as anything in GLOB.mob_list)
 		var/turf/mob_turf = get_turf(mobs)
 		if(!istype(mob_turf))
@@ -417,9 +417,20 @@ GLOBAL_LIST_EMPTY(gravity_generators)
 		if(isliving(mobs))
 			var/mob/living/grav_update = mobs
 			grav_update.refresh_gravity()
+	/* BUBBER EDIT CHANGE BEGIN - GRAVGEN SOUNDS - Original:
 		if(mobs.client)
 			shake_camera(mobs, 15, 1)
 			mobs.playsound_local(T, null, 100, 1, 0.5, sound_to_use = alert_sound)
+	*/
+		if(mobs.client)
+			shake_camera(M = mobs, duration = 3.2 SECONDS, strength = 0.5)
+			mobs.playsound_local(
+				turf_source = mob_turf,
+				soundin = alert_sound,
+				vol = 90,
+				vary = FALSE,
+			)
+	/* Shut up Skyrat priority announcer
 	//SKYRAT EDIT ADDITON BEGIN
 	if(!SSmapping.level_has_any_trait(z, ZTRAIT_STATION)) // SHUT THE FUCK UP ABANDONED STATIONS, I DON'T CARE
 		return
@@ -428,6 +439,7 @@ GLOBAL_LIST_EMPTY(gravity_generators)
 	else
 		priority_announce("A gravity generator has lost its graviton field integrity ballast, artificial gravity is offline.", "Gravity Generator", ANNOUNCER_GRAVGENOFF)
 	//SKYRAT EDIT END
+	*/// BUBBER EDIT CHANGE END - GRAVGEN SOUNDS
 
 /obj/machinery/gravity_generator/main/proc/gravity_in_level()
 	var/turf/T = get_turf(src)

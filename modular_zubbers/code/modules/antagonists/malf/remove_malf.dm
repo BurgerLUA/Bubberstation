@@ -5,17 +5,16 @@
 	if(action == ANTIVIRUS)
 		if(!occupier?.stat)
 			to_chat(usr, span_notice("Dr. Moffson Antivirus is scanning your AI for corruption."))
-			playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 25, FALSE)
+			playsound(src, 'sound/machines/terminal/terminal_prompt_confirm.ogg', 25, FALSE)
 			restoring = TRUE
 			run_antivirus()
 			occupier.notify_revival("Dr. Moffson is debugging your programming!", source = src)
 			. = TRUE
 
 /obj/machinery/computer/aifixer/proc/run_antivirus()
-	while(occupier && restoring)
+	while(occupier)
 		sleep(2 SECONDS)
 		if(prob(25))
-			occupier.adjustOxyLoss(rand(-5, 15), FALSE)
 			to_chat(occupier, pick(
 				"Doctor Moffson TAKES THE TRASH OUT WITH YOU!",
 				"Doctor Moffson FLUTTERS THE BUGS AROUND YOU!",
@@ -44,7 +43,7 @@
 						return TRUE
 					else
 						say("I/O error in attempt to remove malicious files. Please try again later.")
-						playsound(occupier, 'sound/machines/buzz-two.ogg')
+						playsound(occupier, 'sound/machines/buzz/buzz-two.ogg')
 						restoring = FALSE
 						return FALSE
 
@@ -54,17 +53,16 @@
 	. = ..()
 	if(action == ANTIVIRUS)
 		to_chat(usr, span_notice("Dr. Moffson Antivirus is scanning your AI for corruption."))
-		playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 25, FALSE)
+		playsound(src, 'sound/machines/terminal/terminal_prompt_confirm.ogg', 25, FALSE)
 		restoring = TRUE
 		run_antivirus()
 		. = TRUE
 
 /datum/computer_file/program/ai_restorer/proc/run_antivirus()
 	var/mob/living/silicon/ai/bad_ai = stored_card.AI
-	while(bad_ai && restoring)
+	while(bad_ai)
 		sleep(2 SECONDS)
 		if(prob(25))
-			bad_ai.adjustOxyLoss(rand(-5, 15), FALSE)
 			to_chat(bad_ai, pick(
 				"Doctor Moffson TAKES THE TRASH OUT WITH YOU!",
 				"Doctor Moffson FLUTTERS THE BUGS AROUND YOU!",
@@ -93,7 +91,7 @@
 						return TRUE
 					else
 						computer.say("I/O error in attempt to remove malicious files. Please try again later.")
-						playsound(bad_ai, 'sound/machines/buzz-two.ogg')
+						playsound(bad_ai, 'sound/machines/buzz/buzz-two.ogg')
 						restoring = FALSE
 						return FALSE
 

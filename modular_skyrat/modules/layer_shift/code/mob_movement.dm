@@ -10,7 +10,7 @@
 	set name = "Shift Layer Upwards"
 	set category = "IC"
 
-	if(incapacitated())
+	if(incapacitated)
 		to_chat(src, span_warning("You can't do that right now!"))
 		return FALSE
 
@@ -24,12 +24,11 @@
 
 	return TRUE
 
-
 /mob/living/verb/shift_layer_down()
 	set name = "Shift Layer Downwards"
 	set category = "IC"
 
-	if(incapacitated())
+	if(incapacitated)
 		to_chat(src, span_warning("You can't do that right now!"))
 		return FALSE
 
@@ -46,7 +45,6 @@
 
 /datum/emote/living/shift_layer_up
 	key = "shiftlayerup"
-	key_third_person = "shiftlayerup"
 	message = null
 	mob_type_blacklist_typecache = list(/mob/living/brain)
 	cooldown = 0.25 SECONDS
@@ -63,7 +61,6 @@
 
 /datum/emote/living/shift_layer_down
 	key = "shiftlayerdown"
-	key_third_person = "shiftlayerdown"
 	message = null
 	mob_type_blacklist_typecache = list(/mob/living/brain)
 	cooldown = 0.25 SECONDS
@@ -76,3 +73,8 @@
 	var/mob/living/layer_shifter = user
 
 	return layer_shifter.shift_layer_down()
+
+#undef MOB_LAYER_SHIFT_INCREMENT
+#undef MOB_LAYER_MULTIPLIER
+#undef MOB_LAYER_SHIFT_MIN
+#undef MOB_LAYER_SHIFT_MAX

@@ -22,6 +22,8 @@
 	var/menu_description = "A standard chaplain's weapon. Fits in pockets. Can be worn on the belt."
 	/// Lazylist, tracks refs()s to all cultists which have been crit or killed by this nullrod.
 	var/list/cultists_slain
+	/// Affects GLOB.holy_weapon_type. Disable to allow null rods to change at will and without affecting the station's type.
+	var/station_holy_item = TRUE
 
 /obj/item/nullrod/Initialize(mapload)
 	. = ..()
@@ -35,7 +37,7 @@
 	)
 	AddElement(/datum/element/bane, target_type = /mob/living/basic/revenant, damage_multiplier = 0, added_damage = 25, requires_combat_mode = FALSE)
 
-	if(!GLOB.holy_weapon_type && type == /obj/item/nullrod)
+	if((!GLOB.holy_weapon_type || !station_holy_item) && type == /obj/item/nullrod)
 		var/list/rods = list()
 		for(var/obj/item/nullrod/nullrod_type as anything in typesof(/obj/item/nullrod))
 			if(!initial(nullrod_type.chaplain_spawnable))
@@ -43,7 +45,7 @@
 			rods[nullrod_type] = initial(nullrod_type.menu_description)
 		//special non-nullrod subtyped shit
 		rods[/obj/item/gun/ballistic/bow/divine/with_quiver] = "A divine bow and 10 quivered holy arrows."
-		rods[/obj/item/organ/internal/cyberimp/arm/shard/scythe] = "A shard that implants itself into your arm, \
+		rods[/obj/item/organ/cyberimp/arm/toolkit/shard/scythe] = "A shard that implants itself into your arm, \
 									allowing you to conjure forth a vorpal scythe. \
 									Allows you to behead targets for empowered strikes. \
 									Harms you if you dismiss the scythe without first causing harm to a creature. \
@@ -56,6 +58,8 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 		AddComponent(/datum/component/subtype_picker, rods, CALLBACK(src, PROC_REF(on_holy_weapon_picked)))
 
 /obj/item/nullrod/proc/on_holy_weapon_picked(obj/item/nullrod/holy_weapon_type)
+	if(!station_holy_item)
+		return
 	GLOB.holy_weapon_type = holy_weapon_type
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_NULLROD_PICKED)
 	SSblackbox.record_feedback("tally", "chaplain_weapon", 1, "[initial(holy_weapon_type.name)]")
@@ -73,7 +77,7 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	user.visible_message(span_suicide("[user] is killing [user.p_them()]self with [src]! It looks like [user.p_theyre()] trying to get closer to god!"))
 	return (BRUTELOSS|FIRELOSS)
 
-/obj/item/nullrod/attack(mob/living/target_mob, mob/living/user, params)
+/obj/item/nullrod/attack(mob/living/target_mob, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(!user.mind?.holy_role)
 		return ..()
 	if(!IS_CULTIST(target_mob) || istype(target_mob, /mob/living/carbon/human/cult_ghost))
@@ -94,6 +98,10 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	. += span_cult_italic("It has the blood of [num_slain] fallen cultist[num_slain == 1 ? "" : "s"] on it. \
 		<b>Offering</b> it to Nar'sie will transform it into a [num_slain >= 3 ? "powerful" : "standard"] cult weapon.")
 
+/obj/item/nullrod/non_station
+	station_holy_item = FALSE
+	chaplain_spawnable = FALSE
+
 /// Claymore Variant
 /// This subtype possesses a block chance and is sharp.
 
@@ -104,17 +112,26 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	icon_state = "claymore_gold"
 	inhand_icon_state = "claymore_gold"
 	worn_icon_state = "claymore_gold"
+	icon_angle = -45
 	lefthand_file = 'icons/mob/inhands/weapons/swords_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
 	w_class = WEIGHT_CLASS_BULKY
 	slot_flags = ITEM_SLOT_BACK|ITEM_SLOT_BELT
 	block_chance = 30
-	block_sound = 'sound/weapons/parry.ogg'
+	block_sound = 'sound/items/weapons/parry.ogg'
 	sharpness = SHARP_EDGED
-	hitsound = 'sound/weapons/bladeslice.ogg'
-	attack_verb_continuous = list("attacks", "slashes", "stabs", "slices", "tears", "lacerates", "rips", "dices", "cuts")
-	attack_verb_simple = list("attack", "slash", "stab", "slice", "tear", "lacerate", "rip", "dice", "cut")
+	hitsound = 'sound/items/weapons/bladeslice.ogg'
+	attack_verb_continuous = list("attacks", "slashes", "slices", "tears", "lacerates", "rips", "dices", "cuts")
+	attack_verb_simple = list("attack", "slash", "slice", "tear", "lacerate", "rip", "dice", "cut")
 	menu_description = "A sharp claymore which provides a low chance of blocking incoming melee attacks. Can be worn on the back or belt."
+	var/list/alt_continuous = list("stabs", "pierces", "impales")
+	var/list/alt_simple = list("stab", "pierce", "impale")
+
+/obj/item/nullrod/claymore/Initialize(mapload)
+	. = ..()
+	alt_continuous = string_list(alt_continuous)
+	alt_simple = string_list(alt_simple)
+	AddComponent(/datum/component/alternative_sharpness, SHARP_POINTY, alt_continuous, alt_simple, -3)
 
 /obj/item/nullrod/claymore/hit_reaction(mob/living/carbon/human/owner, atom/movable/hitby, attack_text = "the attack", final_block_chance = 0, damage = 0, attack_type = MELEE_ATTACK, damage_type = BRUTE)
 	if(attack_type == PROJECTILE_ATTACK || attack_type == LEAP_ATTACK)
@@ -128,11 +145,12 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	icon_state = "cultblade"
 	inhand_icon_state = "cultblade"
 	worn_icon_state = "cultblade"
+	icon_angle = -45
 	lefthand_file = 'icons/mob/inhands/64x64_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/64x64_righthand.dmi'
 	inhand_x_dimension = 64
 	inhand_y_dimension = 64
-	hitsound = 'sound/hallucinations/growl1.ogg'
+	hitsound = 'sound/effects/hallucinations/growl1.ogg'
 	menu_description = "A sharp blade which provides a low chance of blocking incoming melee attacks. Can be worn on the back or belt."
 
 /obj/item/nullrod/claymore/chainsaw_sword
@@ -144,7 +162,7 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	slot_flags = ITEM_SLOT_BELT
 	attack_verb_continuous = list("saws", "tears", "lacerates", "cuts", "chops", "dices")
 	attack_verb_simple = list("saw", "tear", "lacerate", "cut", "chop", "dice")
-	hitsound = 'sound/weapons/chainsawhit.ogg'
+	hitsound = 'sound/items/weapons/chainsawhit.ogg'
 	tool_behaviour = TOOL_SAW
 	toolspeed = 1.5 //slower than a real saw
 	menu_description = "A sharp chainsaw sword which provides a low chance of blocking incoming melee attacks. Can be used as a slower saw tool. Can be worn on the belt."
@@ -175,11 +193,9 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	force = 15
 	menu_description = "An odd sharp blade which provides a low chance of blocking incoming melee attacks and deals a random amount of damage, which can range from almost nothing to very high. Can be worn on the back."
 
-/obj/item/nullrod/claymore/multiverse/melee_attack_chain(mob/user, atom/target, params)
-	var/old_force = force
-	force += rand(-14, 15)
-	. = ..()
-	force = old_force
+/obj/item/nullrod/claymore/multiverse/pre_attack(atom/target, mob/living/user, list/modifiers, list/attack_modifiers)
+	SET_ATTACK_FORCE(attack_modifiers, rand(max(force - 15, 1), force + 15))
+	return ..()
 
 /obj/item/nullrod/claymore/saber
 	name = "light energy sword"
@@ -188,9 +204,10 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	icon_state = "e_sword_on_blue"
 	inhand_icon_state = "e_sword_on_blue"
 	worn_icon_state = "swordblue"
+	icon_angle = -45
 	slot_flags = ITEM_SLOT_BELT
-	hitsound = 'sound/weapons/blade1.ogg'
-	block_sound = 'sound/weapons/block_blade.ogg'
+	hitsound = 'sound/items/weapons/blade1.ogg'
+	block_sound = 'sound/items/weapons/block_blade.ogg'
 	menu_description = "A sharp energy sword which provides a low chance of blocking incoming melee attacks. Can be worn on the belt."
 
 /obj/item/nullrod/claymore/saber/red
@@ -217,6 +234,7 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	icon_state = "hfrequency0"
 	inhand_icon_state = "hfrequency1"
 	worn_icon_state = "hfrequency0"
+	icon_angle = -45
 	lefthand_file = 'icons/mob/inhands/weapons/swords_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
 	w_class = WEIGHT_CLASS_BULKY
@@ -225,8 +243,16 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	sharpness = SHARP_EDGED
 	attack_verb_continuous = list("chops", "slices", "cuts", "zandatsu's")
 	attack_verb_simple = list("chop", "slice", "cut", "zandatsu")
-	hitsound = 'sound/weapons/rapierhit.ogg'
+	hitsound = 'sound/items/weapons/rapierhit.ogg'
 	menu_description = "A sharp blade which partially penetrates armor. Very effective at butchering bodies. Can be worn on the back."
+	var/list/alt_continuous = list("stabs", "pierces", "impales")
+	var/list/alt_simple = list("stab", "pierce", "impale")
+
+/obj/item/nullrod/vibro/Initialize(mapload)
+	. = ..()
+	alt_continuous = string_list(alt_continuous)
+	alt_simple = string_list(alt_simple)
+	AddComponent(/datum/component/alternative_sharpness, SHARP_POINTY, alt_continuous, alt_simple, -3)
 
 /obj/item/nullrod/vibro/Initialize(mapload)
 	. = ..()
@@ -245,7 +271,7 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	lefthand_file = 'icons/mob/inhands/weapons/swords_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
 	worn_icon_state = "spellblade"
-	hitsound = 'sound/weapons/rapierhit.ogg'
+	hitsound = 'sound/items/weapons/rapierhit.ogg'
 	menu_description = "A sharp blade which partially penetrates armor. Very effective at butchering bodies. Can be worn on the back."
 
 /obj/item/nullrod/vibro/talking
@@ -254,12 +280,13 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	icon = 'icons/obj/weapons/sword.dmi'
 	icon_state = "talking_sword"
 	inhand_icon_state = "talking_sword"
+	icon_angle = 45
 	lefthand_file = 'icons/mob/inhands/weapons/swords_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
 	worn_icon_state = "talking_sword"
 	attack_verb_continuous = list("chops", "slices", "cuts")
 	attack_verb_simple= list("chop", "slice", "cut")
-	hitsound = 'sound/weapons/rapierhit.ogg'
+	hitsound = 'sound/items/weapons/rapierhit.ogg'
 	menu_description = "A sharp blade which partially penetrates armor. Able to awaken a friendly spirit to provide guidance. Very effective at butchering bodies. Can be worn on the back."
 
 /obj/item/nullrod/vibro/talking/Initialize(mapload)
@@ -276,7 +303,7 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	slot_flags = ITEM_SLOT_BELT
 	attack_verb_continuous = list("saws", "tears", "lacerates", "cuts", "chops", "dices")
 	attack_verb_simple = list("saw", "tear", "lacerate", "cut", "chop", "dice")
-	hitsound = 'sound/weapons/chainsawhit.ogg'
+	hitsound = 'sound/items/weapons/chainsawhit.ogg'
 	tool_behaviour = TOOL_SAW
 	toolspeed = 0.5 //same speed as an active chainsaw
 	chaplain_spawnable = FALSE //prevents being pickable as a chaplain weapon (it has 30 force)
@@ -296,8 +323,9 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	righthand_file = 'icons/mob/inhands/items/touchspell_righthand.dmi'
 	slot_flags = null
 	item_flags = ABSTRACT | DROPDEL
+	resistance_flags = FIRE_PROOF|ACID_PROOF
 	w_class = WEIGHT_CLASS_HUGE
-	hitsound = 'sound/weapons/sear.ogg'
+	hitsound = 'sound/items/weapons/sear.ogg'
 	damtype = BURN
 	attack_verb_continuous = list("punches", "cross counters", "pummels")
 	attack_verb_simple = list(SFX_PUNCH, "cross counter", "pummel")
@@ -315,13 +343,14 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	icon = 'icons/obj/weapons/staff.dmi'
 	icon_state = "godstaff-red"
 	inhand_icon_state = "godstaff-red"
+	icon_angle = -45
 	lefthand_file = 'icons/mob/inhands/weapons/staves_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/staves_righthand.dmi'
 	w_class = WEIGHT_CLASS_HUGE
 	force = 5
 	slot_flags = ITEM_SLOT_BACK
 	block_chance = 50
-	block_sound = 'sound/weapons/genhit.ogg'
+	block_sound = 'sound/items/weapons/genhit.ogg'
 	menu_description = "A red staff which provides a medium chance of blocking incoming attacks via a protective red aura around its user, but deals very low amount of damage. Can be worn only on the back."
 	/// The icon which appears over the mob holding the item
 	var/shield_icon = "shield-red"
@@ -347,12 +376,13 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	icon_state = "sord"
 	inhand_icon_state = "sord"
 	worn_icon_state = "sord"
+	icon_angle = -35
 	lefthand_file = 'icons/mob/inhands/weapons/swords_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
 	force = 4.13
 	throwforce = 1
 	slot_flags = ITEM_SLOT_BELT
-	hitsound = 'sound/weapons/bladeslice.ogg'
+	hitsound = 'sound/items/weapons/bladeslice.ogg'
 	attack_verb_continuous = list("attacks", "slashes", "stabs", "slices", "tears", "lacerates", "rips", "dices", "cuts")
 	attack_verb_simple = list("attack", "slash", "stab", "slice", "tear", "lacerate", "rip", "dice", "cut")
 	menu_description = "An odd s(w)ord dealing a laughable amount of damage. Fits in pockets. Can be worn on the belt."
@@ -371,6 +401,7 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	icon_state = "hammeron"
 	inhand_icon_state = "hammeron"
 	worn_icon_state = "hammeron"
+	icon_angle = -45
 	lefthand_file = 'icons/mob/inhands/weapons/hammers_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/hammers_righthand.dmi'
 	w_class = WEIGHT_CLASS_BULKY
@@ -395,10 +426,11 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	w_class = WEIGHT_CLASS_HUGE
 	slot_flags = null
 	item_flags = ABSTRACT
+	resistance_flags = FIRE_PROOF|ACID_PROOF
 	sharpness = SHARP_EDGED
 	attack_verb_continuous = list("saws", "tears", "lacerates", "cuts", "chops", "dices")
 	attack_verb_simple = list("saw", "tear", "lacerate", "cut", "chop", "dice")
-	hitsound = 'sound/weapons/chainsawhit.ogg'
+	hitsound = 'sound/items/weapons/chainsawhit.ogg'
 	tool_behaviour = TOOL_SAW
 	toolspeed = 2 //slower than a real saw
 	menu_description = "An undroppable sharp chainsaw hand. Can be used as a very slow saw tool. Capable of slowly butchering bodies. Disappears if the arm holding it is cut off."
@@ -421,13 +453,14 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	icon = 'icons/obj/weapons/khopesh.dmi'
 	icon_state = "clownrender"
 	inhand_icon_state = "cultdagger"
+	icon_angle = -45
 	lefthand_file = 'icons/mob/inhands/weapons/swords_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
 	worn_icon_state = "render"
 	hitsound = 'sound/items/bikehorn.ogg'
 	sharpness = SHARP_EDGED
-	attack_verb_continuous = list("attacks", "slashes", "stabs", "slices", "tears", "lacerates", "rips", "dices", "cuts")
-	attack_verb_simple = list("attack", "slash", "stab", "slice", "tear", "lacerate", "rip", "dice", "cut")
+	attack_verb_continuous = list("attacks", "slashes", "slices", "tears", "lacerates", "rips", "dices", "cuts")
+	attack_verb_simple = list("attack", "slash", "slice", "tear", "lacerate", "rip", "dice", "cut")
 	menu_description = "A sharp dagger. Fits in pockets. Can be worn on the belt. Honk."
 
 // Pride-struck Hammer - Transfers reagents in your body to those you hit.
@@ -441,6 +474,7 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	icon_state = "pride"
 	inhand_icon_state = "pride"
 	worn_icon_state = "pride"
+	icon_angle = -45
 	lefthand_file = 'icons/mob/inhands/weapons/hammers_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/hammers_righthand.dmi'
 	force = 16
@@ -449,7 +483,7 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	slot_flags = ITEM_SLOT_BACK
 	attack_verb_continuous = list("attacks", "smashes", "crushes", "splatters", "cracks")
 	attack_verb_simple = list("attack", "smash", "crush", "splatter", "crack")
-	hitsound = 'sound/weapons/blade1.ogg'
+	hitsound = 'sound/items/weapons/blade1.ogg'
 	menu_description = "A hammer dealing a little less damage due to its user's pride. Has a low chance of transferring some of the user's reagents to the target. Capable of tapping knees to measure brain health. Can be worn on the back."
 
 /obj/item/nullrod/pride_hammer/Initialize(mapload)
@@ -473,12 +507,13 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	icon_state = "chain"
 	inhand_icon_state = "chain"
 	worn_icon_state = "whip"
+	icon_angle = -90
 	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
 	slot_flags = ITEM_SLOT_BELT
 	attack_verb_continuous = list("whips", "lashes")
 	attack_verb_simple = list("whip", "lash")
-	hitsound = 'sound/weapons/chainhit.ogg'
+	hitsound = 'sound/items/weapons/chainhit.ogg'
 	menu_description = "A whip. Deals extra damage to vampires. Fits in pockets. Can be worn on the belt."
 
 // Atheist's Fedora - Wear it on your head. No melee damage, massive throw force.
@@ -514,10 +549,12 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	icon = 'icons/obj/weapons/changeling_items.dmi'
 	icon_state = "arm_blade"
 	inhand_icon_state = "arm_blade"
+	icon_angle = 180
 	lefthand_file = 'icons/mob/inhands/antag/changeling_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/antag/changeling_righthand.dmi'
 	slot_flags = null
 	item_flags = ABSTRACT
+	resistance_flags = FIRE_PROOF|ACID_PROOF
 	w_class = WEIGHT_CLASS_HUGE
 	sharpness = SHARP_EDGED
 	wound_bonus = -20
@@ -545,8 +582,9 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 /obj/item/nullrod/carp
 	name = "carp-sie plushie"
 	desc = "An adorable stuffed toy that resembles the god of all carp. The teeth look pretty sharp. Activate it to receive the blessing of Carp-Sie."
-	icon = 'icons/obj/toys/plushes.dmi'
-	icon_state = "map_plushie_carp"
+	icon = 'icons/map_icons/items/_item.dmi'
+	icon_state = "/obj/item/nullrod/carp"
+	post_init_icon_state = "map_plushie_carp"
 	greyscale_config = /datum/greyscale_config/plush_carp
 	greyscale_colors = "#cc99ff#000000"
 	inhand_icon_state = "carp_plushie"
@@ -556,7 +594,7 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	force = 15
 	attack_verb_continuous = list("bites", "eats", "fin slaps")
 	attack_verb_simple = list("bite", "eat", "fin slap")
-	hitsound = 'sound/weapons/bite.ogg'
+	hitsound = 'sound/items/weapons/bite.ogg'
 	menu_description = "A plushie dealing a little less damage due to its cute form. Capable of blessing one person with the Carp-Sie favor, which grants friendship of all wild space carps. Fits in pockets. Can be worn on the belt."
 
 /obj/item/nullrod/carp/Initialize(mapload)
@@ -568,9 +606,9 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 /obj/item/nullrod/bostaff
 	name = "monk's staff"
 	desc = "A long, tall staff made of polished wood. Traditionally used in ancient old-Earth martial arts, it is now used to harass the clown."
-	force = 14
+	force = 10
 	block_chance = 40
-	block_sound = 'sound/weapons/genhit.ogg'
+	block_sound = 'sound/items/weapons/genhit.ogg'
 	slot_flags = ITEM_SLOT_BACK
 	w_class = WEIGHT_CLASS_BULKY
 	hitsound = SFX_SWING_HIT
@@ -581,6 +619,7 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	base_icon_state = "bostaff"
 	inhand_icon_state = "bostaff0"
 	worn_icon_state = "bostaff0"
+	icon_angle = -135
 	lefthand_file = 'icons/mob/inhands/weapons/staves_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/staves_righthand.dmi'
 	menu_description = "A staff which provides a medium-low chance of blocking incoming melee attacks and deals less damage, unless dual-wielded. Can be worn on the back."
@@ -590,13 +629,16 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	AddComponent(/datum/component/two_handed, \
 		force_unwielded = 14, \
 		force_wielded = 18, \
-		icon_wielded = "[base_icon_state]1", \
 	)
 
 /obj/item/nullrod/bostaff/update_icon_state()
-	icon_state = "[base_icon_state]0"
+	icon_state = inhand_icon_state = "[base_icon_state][HAS_TRAIT(src, TRAIT_WIELDED)]"
 	return ..()
 
+/obj/item/nullrod/bostaff/hit_reaction(mob/living/carbon/human/owner, atom/movable/hitby, attack_text = "the attack", final_block_chance = 0, damage = 0, attack_type = MELEE_ATTACK, damage_type = BRUTE)
+	if(attack_type == PROJECTILE_ATTACK)
+		final_block_chance = 0 //Don't bring a sword to a gunfight
+	return ..()
 
 // Arrhythmic Knife - Lets your walk without rhythm by varying your walk speed. Can't be put away.
 
@@ -606,20 +648,26 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	icon = 'icons/obj/weapons/sword.dmi'
 	icon_state = "crysknife"
 	inhand_icon_state = "crysknife"
+	icon_angle = -45
 	lefthand_file = 'icons/mob/inhands/weapons/swords_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
 	w_class = WEIGHT_CLASS_HUGE
 	sharpness = SHARP_EDGED
 	slot_flags = null
-	hitsound = 'sound/weapons/bladeslice.ogg'
-	attack_verb_continuous = list("attacks", "slashes", "stabs", "slices", "tears", "lacerates", "rips", "dices", "cuts")
-	attack_verb_simple = list("attack", "slash", "stab", "slice", "tear", "lacerate", "rip", "dice", "cut")
+	hitsound = 'sound/items/weapons/bladeslice.ogg'
+	attack_verb_continuous = list("attacks", "slashes", "slices", "tears", "lacerates", "rips", "dices", "cuts")
+	attack_verb_simple = list("attack", "slash", "slice", "tear", "lacerate", "rip", "dice", "cut")
 	item_flags = SLOWS_WHILE_IN_HAND
 	menu_description = "A sharp knife. Randomly speeds or slows its user at a regular intervals. Capable of butchering bodies. Cannot be worn anywhere."
+	var/list/alt_continuous = list("stabs", "pierces", "impales")
+	var/list/alt_simple = list("stab", "pierce", "impale")
 
 /obj/item/nullrod/tribal_knife/Initialize(mapload)
 	. = ..()
 	START_PROCESSING(SSobj, src)
+	alt_continuous = string_list(alt_continuous)
+	alt_simple = string_list(alt_simple)
+	AddComponent(/datum/component/alternative_sharpness, SHARP_POINTY, alt_continuous, alt_simple, -3)
 	AddComponent(/datum/component/butchering, \
 	speed = 5 SECONDS, \
 	effectiveness = 100, \
@@ -644,6 +692,7 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	icon = 'icons/obj/weapons/spear.dmi'
 	icon_state = "pitchfork0"
 	inhand_icon_state = "pitchfork0"
+	icon_angle = -45
 	lefthand_file = 'icons/mob/inhands/weapons/polearms_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/polearms_righthand.dmi'
 	worn_icon_state = "pitchfork0"
@@ -651,7 +700,7 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	slot_flags = ITEM_SLOT_BACK
 	attack_verb_continuous = list("pokes", "impales", "pierces", "jabs")
 	attack_verb_simple = list("poke", "impale", "pierce", "jab")
-	hitsound = 'sound/weapons/bladeslice.ogg'
+	hitsound = 'sound/items/weapons/bladeslice.ogg'
 	sharpness = SHARP_EDGED
 	menu_description = "A sharp pitchfork. Can be worn on the back."
 
@@ -681,6 +730,7 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	icon_state = "hypertool"
 	inhand_icon_state = "hypertool"
 	worn_icon_state = "hypertool"
+	icon_angle = -45
 	lefthand_file = 'icons/mob/inhands/equipment/tools_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/tools_righthand.dmi'
 	slot_flags = ITEM_SLOT_BELT
@@ -688,7 +738,7 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	armour_penetration = 35
 	attack_verb_continuous = list("pulses", "mends", "cuts")
 	attack_verb_simple = list("pulse", "mend", "cut")
-	hitsound = 'sound/effects/sparks4.ogg'
+	hitsound = 'sound/effects/sparks/sparks4.ogg'
 	menu_description = "A tool dealing brain damage which partially penetrates armor. Fits in pockets. Can be worn on the belt."
 
 // Ancient Spear - Slight armor penetration, based on the Brass Spear from the Clockcult game mode.
@@ -699,6 +749,7 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	icon = 'icons/obj/weapons/spear.dmi'
 	icon_state = "ratvarian_spear"
 	inhand_icon_state = "ratvarian_spear"
+	icon_angle = -45
 	lefthand_file = 'icons/mob/inhands/antag/clockwork_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/antag/clockwork_righthand.dmi'
 	slot_flags = ITEM_SLOT_BELT
@@ -707,8 +758,31 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	w_class = WEIGHT_CLASS_HUGE
 	attack_verb_continuous = list("stabs", "pokes", "slashes", "clocks")
 	attack_verb_simple = list("stab", "poke", "slash", "clock")
-	hitsound = 'sound/weapons/bladeslice.ogg'
+	hitsound = 'sound/items/weapons/bladeslice.ogg'
 	menu_description = "A pointy spear which penetrates armor a little. Can be worn only on the belt."
+
+// Unholy version of above, since the gamemode is dead in the water
+
+/obj/item/brass_spear
+	name = "dull brass spear"
+	desc = "An ancient spear made of brass. The point seems sharp, but it feels so dull.. you get a feeling brass isn't good nonmagical material for a weapon."
+	icon = 'icons/obj/weapons/spear.dmi'
+	icon_state = "ratvarian_spear"
+	inhand_icon_state = "ratvarian_spear"
+	icon_angle = -45
+	lefthand_file = 'icons/mob/inhands/antag/clockwork_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/antag/clockwork_righthand.dmi'
+	slot_flags = ITEM_SLOT_BELT
+	force = 15
+	throw_speed = 3
+	throw_range = 7
+	throwforce = 15
+	armour_penetration = 10
+	sharpness = SHARP_POINTY
+	w_class = WEIGHT_CLASS_HUGE
+	attack_verb_continuous = list("stabs", "pokes", "slashes", "clocks")
+	attack_verb_simple = list("stab", "poke", "slash", "clock")
+	hitsound = 'sound/items/weapons/bladeslice.ogg'
 
 // Nullblade - For when you really want to feel like rolling dice during combat
 
@@ -719,6 +793,7 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	icon_state = "nullsword"
 	inhand_icon_state = "nullsword"
 	worn_icon_state = "nullsword"
+	icon_angle = -45
 	lefthand_file = 'icons/mob/inhands/weapons/swords_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
 	w_class = WEIGHT_CLASS_BULKY
@@ -726,43 +801,38 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	wound_bonus = 10
 	bare_wound_bonus = 30
 	slot_flags = ITEM_SLOT_BELT
-	block_sound = 'sound/weapons/parry.ogg'
-	sharpness = SHARP_POINTY
-	hitsound = 'sound/weapons/bladeslice.ogg'
-	attack_verb_continuous = list("attacks", "punctures", "stabs", "slices", "tears", "lacerates", "rips", "dices", "cuts")
-	attack_verb_simple = list("attack", "puncture", "stab", "slice", "tear", "lacerate", "rip", "dice", "cut")
+	block_sound = 'sound/items/weapons/parry.ogg'
+	sharpness = SHARP_EDGED
+	hitsound = 'sound/items/weapons/bladeslice.ogg'
+	attack_verb_continuous = list("attacks", "slashes", "slices", "tears", "lacerates", "rips", "dices", "cuts")
+	attack_verb_simple = list("attack", "slashes", "slice", "tear", "lacerate", "rip", "dice", "cut")
 	menu_description = "A blade that deals variable, low amounts of damage, but does easily inflict wounds. \
 		The stronger your swinging arm is, the stronger the blade is, though only slightly. \
 		Against debilitated targets, can also deal additional sneak attack damage with a very high wound chance."
 
-/obj/item/nullrod/nullblade/melee_attack_chain(mob/user, atom/target, params)
-	//Track our actual force separately
-	var/old_force = force
-	force = 0
-	//Potential dice roll for our baseline force
-	force += roll("1d6")
+	var/list/alt_continuous = list("stabs", "pierces", "impales", "punctures")
+	var/list/alt_simple = list("stab", "pierce", "impale", "puncture")
 
-	//Now we can check for our user's potential 'strength' value. As a baseline, we'll use a default value of 4 for the sake of nonhuman users.
+/obj/item/nullrod/nullblade/Initialize(mapload)
+	. = ..()
+	alt_continuous = string_list(alt_continuous)
+	alt_simple = string_list(alt_simple)
+	AddComponent(/datum/component/alternative_sharpness, SHARP_POINTY, alt_continuous, alt_simple)
+
+/obj/item/nullrod/nullblade/pre_attack(atom/target, mob/living/user, list/modifiers, list/attack_modifiers)
+	//Check for our user's potential 'strength' value. As a baseline, we'll use a default value of 4 for the sake of nonhuman users.
 	var/strength_value = 4
-
-	//We can use our human wielder's arm strength to determine their 'strength'. We add unarmed lower and upper, then divide by four.
-	//This isn't how strength works in dnd but who fucking cares.
+	// We can use our human wielder's arm strength to determine their 'strength'. We add unarmed lower and upper, then divide by four.
+	// This isn't how strength works in dnd but who fucking cares.
 	if(ishuman(user))
 		var/mob/living/carbon/human/human_user = user
 		var/obj/item/bodypart/wielding_bodypart = human_user.get_active_hand()
 		strength_value = round((wielding_bodypart.unarmed_damage_low + wielding_bodypart.unarmed_damage_high) * 0.25, 1)
+	// Our force becomes 1d6 + strength + some modifier (based on force - base force) to account for whetstones and other things.
+	SET_ATTACK_FORCE(attack_modifiers, roll("1d6") + strength_value + (force - initial(force)))
+	return ..()
 
-	force += strength_value
-
-	//If our old_force is higher than our initial force, add the difference to this calculation.
-	//We do this because our force could have been changed by things like whetstones and RPG stats.
-	force += old_force - initial(force)
-
-	. = ..()
-	//Reapply our old force.
-	force = old_force
-
-/obj/item/nullrod/nullblade/afterattack(atom/target, mob/user, click_parameters)
+/obj/item/nullrod/nullblade/afterattack(atom/target, mob/user, list/modifiers, list/attack_modifiers)
 	if(!isliving(target))
 		return
 
@@ -801,21 +871,12 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	else if(living_target.pulledby && living_target.pulledby.grab_state >= GRAB_AGGRESSIVE)
 		successful_sneak_attack = TRUE
 
-	// traits that render you unable to defend yourself properly from an attack
-	else if(HAS_TRAIT(living_target, TRAIT_SPINNING) || HAS_TRAIT(living_target, TRAIT_HANDS_BLOCKED))
+	// blocked hands renders you unable to defend yourself properly from an attack
+	else if(HAS_TRAIT(living_target, TRAIT_HANDS_BLOCKED))
 		successful_sneak_attack = TRUE
 
-	// We'll take "same tile" as "behind" for ease
-	else if(living_target.loc == user.loc)
-		successful_sneak_attack = TRUE
-
-	// We'll also assume lying down is vulnerable, as mob directions when lying are unclear and you have trouble defending yourself from prone
-	else if(living_target.body_position == LYING_DOWN)
-		successful_sneak_attack = TRUE
-
-	// Now check for if we're behind
-	var/dir_living_target_to_user = get_dir(living_target, user)
-	if(living_target.dir & REVERSE_DIR(dir_living_target_to_user))
+	// Check for various positional outcomes to determine a sneak attack. We want to sneak attack whenever our target is behind.
+	else if(check_behind(user, living_target))
 		successful_sneak_attack = TRUE
 
 	/// Now we'll check for things that STOP a sneak attack. Why? Because this mechanic isn't complicated enough and I must insert more ivory tower design.
@@ -828,7 +889,7 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 		successful_sneak_attack = FALSE
 		sneak_attack_fail_message = TRUE
 
-	else if(IS_HERETIC_MONSTER(living_target) && prob(50)) // IT IS HARD TO SNEAK ATTACK SOMETHING WITH TOO MANY REDUNDANT EVERYTHINGS.
+	else if(HAS_TRAIT(living_target, TRAIT_HERETIC_SUMMON) && prob(50)) // IT IS HARD TO SNEAK ATTACK SOMETHING WITH TOO MANY REDUNDANT EVERYTHINGS.
 		successful_sneak_attack = FALSE
 		sneak_attack_fail_message = TRUE
 
@@ -879,4 +940,4 @@ means that you'll be forced to move carefully while it's on. Fits in pockets, an
 	// We got a sneak attack!
 	living_target.apply_damage(round(sneak_attack_dice, DAMAGE_PRECISION), BRUTE, def_zone = affecting, blocked = armor_block, wound_bonus = bare_wound_bonus, sharpness = SHARP_EDGED)
 	living_target.balloon_alert(user, "sneak attack!")
-	playsound(living_target, 'sound/weapons/guillotine.ogg', 50, TRUE)
+	playsound(living_target, 'sound/items/weapons/guillotine.ogg', 50, TRUE)

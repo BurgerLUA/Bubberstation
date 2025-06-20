@@ -51,11 +51,12 @@
 /obj/item/clothing/mask/gas/clown_colourable
 	name = "colourable clown mask"
 	desc = "The face of pure evil, now multicoloured."
-	icon_state = "gags_mask"
+	icon = 'icons/map_icons/clothing/mask.dmi'
+	icon_state = "/obj/item/clothing/mask/gas/clown_colourable"
+	post_init_icon_state = "gags_mask"
 	clothing_flags = MASKINTERNALS
 	flags_cover = MASKCOVERSEYES
 	resistance_flags = FLAMMABLE
-	has_fov = FALSE
 	greyscale_config = /datum/greyscale_config/clown_mask
 	greyscale_config_worn = /datum/greyscale_config/clown_mask/worn
 	greyscale_colors = "#FFFFFF#F20018#0000FF#00CC00"
@@ -75,12 +76,12 @@
 /obj/item/clothing/mask/gas/respirator
 	name = "half mask respirator"
 	desc = "A half mask respirator that's really just a standard gas mask with the glass taken off."
-	icon = 'modular_skyrat/modules/GAGS/icons/masks.dmi'
+	icon = 'icons/map_icons/clothing/mask.dmi'
+	icon_state = "/obj/item/clothing/mask/gas/respirator"
 	worn_icon = 'modular_skyrat/modules/GAGS/icons/masks.dmi'
-	icon_state = "respirator"
+	post_init_icon_state = "respirator"
 	inhand_icon_state = "sechailer"
 	w_class = WEIGHT_CLASS_SMALL
-	has_fov = FALSE
 	clothing_flags = BLOCK_GAS_SMOKE_EFFECT | MASKINTERNALS
 	flags_inv = HIDEFACIALHAIR|HIDESNOUT
 	flags_cover = MASKCOVERSMOUTH
@@ -127,7 +128,7 @@
 		)
 
 /obj/item/clothing/mask/gas/clown_hat/vox/ui_action_click(mob/user)
-	if(!istype(user) || user.incapacitated())
+	if(!istype(user) || user.incapacitated)
 		return
 
 	var/list/options = list()
@@ -142,7 +143,7 @@
 	if(!choice)
 		return FALSE
 
-	if(src && choice && !user.incapacitated() && in_range(user,src))
+	if(src && choice && !user.incapacitated && in_range(user,src))
 		icon_state = options[choice]
 		user.update_worn_mask()
 		update_item_action_buttons()
@@ -167,7 +168,7 @@
 		)
 
 /obj/item/clothing/mask/gas/mime/vox/ui_action_click(mob/user)
-	if(!istype(user) || user.incapacitated())
+	if(!istype(user) || user.incapacitated)
 		return
 
 	var/list/options = list()
@@ -180,7 +181,7 @@
 	if(!choice)
 		return FALSE
 
-	if(src && choice && !user.incapacitated() && in_range(user,src))
+	if(src && choice && !user.incapacitated && in_range(user,src))
 		var/mob/living/carbon/human/human_user = user
 		if(human_user.dna.species.mutant_bodyparts["snout"])
 			icon = 'modular_skyrat/master_files/icons/obj/clothing/masks.dmi'

@@ -1,5 +1,17 @@
 // RESEARCH NODES
 
+/datum/techweb_node/cyber/empathy_implant
+	id = TECHWEB_NODE_EMPATHY_IMPLANT
+	display_name = "Empathic Sensor Implant"
+	description = "The result of assuredly-ethical experiments conducted on those with special minds."
+	prereq_ids = list(TECHWEB_NODE_CYBER_IMPLANTS)
+	design_ids = list(
+		"ci_empathic_sensor",
+	)
+	required_experiments = list(/datum/experiment/scanning/people/open_minds)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
+	announce_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_MEDICAL)
+
 /datum/techweb_node/botanygene
 	id = TECHWEB_NODE_BOTANY_ADV
 	display_name = "Experimental Botanical Engineering"
@@ -15,6 +27,7 @@
 	. = ..()
 	design_ids += list(
 		"bs_experi_scanner",
+		"bs_experi_scanner_cyborg",
 	)
 
 /datum/techweb_node/ai_laws/New()
@@ -29,7 +42,6 @@
 /datum/techweb_node/medbay_equip_adv/New()
 	. = ..()
 	design_ids += list(
-		"crewmonitor",
 		"borg_upgrade_advancedanalyzer",
 	)
 
@@ -38,6 +50,15 @@
 	design_ids += list(
 		"limbdesign_hemophage",
 		"limbdesign_tajaran",
+	)
+
+//ENGINEERING
+/datum/techweb_node/atmos/New()
+	. = ..()
+	design_ids += list(
+		"nitrogen_tank",
+		//"nitrogen_tank_belt", | Uncomment in case nitrogen internal tanks get refactored to no longer be 25L
+		"anesthetic_tank",
 	)
 
 // TOOLS
@@ -55,7 +76,8 @@
 	design_ids += list(
 		"borg_upgrade_advcutter",
 		"borg_upgrade_inducer_sci",
-		"borg_upgrade_brped"
+		"borg_upgrade_brped",
+		"rld_cyborg"
 	)
 
 /datum/techweb_node/borg_medical/New()
@@ -70,6 +92,21 @@
 	design_ids += list(
 		"blanksynth",
 		"dominatrixmodule",
+		"borg_upgrade_expand",
+		"borg_upgrade_shrink",
+	)
+
+/datum/techweb_node/borg_utility/New()
+	. = ..()
+	design_ids -= list(
+		"borg_upgrade_expand" // Moved to default robotics, always available. It provides no practical benefit so it shouldn't be here
+	)
+
+/datum/techweb_node/borg_mining/New()
+	. = ..()
+	design_ids += list(
+		"pinpointer_vent_cyborg",
+		"adv_xenoarchbag_cyborg"
 	)
 
 // Computer Tech
@@ -78,31 +115,6 @@
 	design_ids += list(
 		"minesweeper",
 	)
-
-//Weaponry Research
-
-/datum/techweb_node/magazineresearch
-	id = TECHWEB_NODE_MAGAZINES_SIM
-	display_name = "Military Grade Munition Research"
-	description = "In the wake of the NRI Border Conflict, there was a drive to advances our armament, learn how sol does it."
-	prereq_ids = list(TECHWEB_NODE_RIOT_SUPRESSION)
-	design_ids = list(
-		"s12g_buckshot",
-		"s12g_slug",
-		"sol40_riflstandardemag",
-		"solgrenade_extmag",
-	)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
-
-/datum/techweb_node/magazineresearch_heavy
-	id = TECHWEB_NODE_MAGAZINES_ADV
-	display_name = "Advanced Munition Research"
-	description = "The same technology we used to defeat eldritch god, even you can have it"
-	prereq_ids = list(TECHWEB_NODE_SYNDICATE_BASIC)
-	design_ids = list(
-		"sol40_rifldrummag",
-	)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS * 2)  //Unreasonably expensive and locked behind multiple tier of research, you can have abit of powercreep as a treat
 
 /datum/techweb_node/riot_supression/New()
 	design_ids += "wt550_ammo_rubber"
@@ -114,7 +126,6 @@
 	design_ids += "s12g_rubber"
 	design_ids += "s12g_bslug"
 	design_ids += "s12g_incinslug"
-	design_ids += "s12g_flechette"
 	design_ids += "wt550_ammo_normal"
 	design_ids += "sol35_shortextmag"
 	design_ids += "sol40_riflemag"
@@ -132,6 +143,7 @@
 	design_ids += "wt550_ammo_incendiary"
 	design_ids += "s12g_magnum"
 	design_ids += "s12g_express"
+	design_ids += "mod_mind_transfer"
 	. = ..()
 
 /datum/techweb_node/nerd
@@ -168,4 +180,3 @@
 	research_costs = list(
 		TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS
 	)
-

@@ -112,7 +112,7 @@
 	var/list/possible_emotes = list("moan")
 	switch(user.zone_selected) //to let code know what part of body we gonna fuck
 		if(BODY_ZONE_PRECISE_GROIN)
-			var/obj/item/organ/external/genital/vagina = target.get_organ_slot(ORGAN_SLOT_VAGINA)
+			var/obj/item/organ/genital/vagina = target.get_organ_slot(ORGAN_SLOT_VAGINA)
 			if(!vagina?.is_exposed())
 				to_chat(user, span_danger("Looks like [target]'s groin is covered!"))
 				return FALSE
@@ -159,7 +159,7 @@
 			possible_emotes = list("gasp", "moan")
 
 		else
-			var/obj/item/organ/external/genital/anus = target.get_organ_slot(ORGAN_SLOT_ANUS)
+			var/obj/item/organ/genital/anus = target.get_organ_slot(ORGAN_SLOT_ANUS)
 			if(!anus?.is_exposed())
 				to_chat(user, span_danger("Looks like [target]'s anus is covered!"))
 				return FALSE
@@ -181,7 +181,7 @@
 		target.try_lewd_autoemote(pick(possible_emotes))
 
 	user.visible_message(span_purple("[user] [message]!"))
-	play_lewd_sound(loc, pick('modular_skyrat/modules/modular_items/lewd_items/sounds/bang1.ogg',
+	conditional_pref_sound(loc, pick('modular_skyrat/modules/modular_items/lewd_items/sounds/bang1.ogg',
 						'modular_skyrat/modules/modular_items/lewd_items/sounds/bang2.ogg',
 						'modular_skyrat/modules/modular_items/lewd_items/sounds/bang3.ogg',
 						'modular_skyrat/modules/modular_items/lewd_items/sounds/bang4.ogg',
@@ -254,7 +254,7 @@ GLOBAL_LIST_INIT(dildo_colors, list(//mostly neon colors
 
 /// Choose a color and transparency level for the toy
 /obj/item/clothing/sextoy/dildo/custom_dildo/proc/customize(mob/living/user)
-	if(!src || !user || user.incapacitated() || !in_range(user, src))
+	if(!src || !user || user.incapacitated || !in_range(user, src))
 		return FALSE
 
 	var/color_choice = tgui_input_list(user, "Choose a color for your dildo.", "Dildo Color", GLOB.dildo_colors)
@@ -346,11 +346,11 @@ GLOBAL_LIST_INIT(dildo_colors, list(//mostly neon colors
 	. = ..()
 	if(!istype(user))
 		return
-	var/obj/item/organ/external/genital/vagina/vagina = user.get_organ_slot(ORGAN_SLOT_VAGINA)
-	var/obj/item/organ/external/genital/womb/womb = user.get_organ_slot(ORGAN_SLOT_WOMB)
-	var/obj/item/organ/external/genital/penis/penis = user.get_organ_slot(ORGAN_SLOT_PENIS)
-	var/obj/item/organ/external/genital/testicles/testicles = user.get_organ_slot(ORGAN_SLOT_TESTICLES)
-	var/obj/item/organ/external/genital/anus/anus = user.get_organ_slot(ORGAN_SLOT_ANUS)
+	var/obj/item/organ/genital/vagina/vagina = user.get_organ_slot(ORGAN_SLOT_VAGINA)
+	var/obj/item/organ/genital/womb/womb = user.get_organ_slot(ORGAN_SLOT_WOMB)
+	var/obj/item/organ/genital/penis/penis = user.get_organ_slot(ORGAN_SLOT_PENIS)
+	var/obj/item/organ/genital/testicles/testicles = user.get_organ_slot(ORGAN_SLOT_TESTICLES)
+	var/obj/item/organ/genital/anus/anus = user.get_organ_slot(ORGAN_SLOT_ANUS)
 
 	if(src == user.vagina)
 		vagina?.visibility_preference = GENITAL_NEVER_SHOW
@@ -379,11 +379,11 @@ GLOBAL_LIST_INIT(dildo_colors, list(//mostly neon colors
 	if(other_end)
 		QDEL_NULL(other_end)
 
-	var/obj/item/organ/external/genital/vagina/vagina = user.get_organ_slot(ORGAN_SLOT_VAGINA)
-	var/obj/item/organ/external/genital/womb/womb = user.get_organ_slot(ORGAN_SLOT_WOMB)
-	var/obj/item/organ/external/genital/penis/penis = user.get_organ_slot(ORGAN_SLOT_PENIS)
-	var/obj/item/organ/external/genital/testicles/testicles = user.get_organ_slot(ORGAN_SLOT_TESTICLES)
-	var/obj/item/organ/external/genital/anus/anus = user.get_organ_slot(ORGAN_SLOT_ANUS)
+	var/obj/item/organ/genital/vagina/vagina = user.get_organ_slot(ORGAN_SLOT_VAGINA)
+	var/obj/item/organ/genital/womb/womb = user.get_organ_slot(ORGAN_SLOT_WOMB)
+	var/obj/item/organ/genital/penis/penis = user.get_organ_slot(ORGAN_SLOT_PENIS)
+	var/obj/item/organ/genital/testicles/testicles = user.get_organ_slot(ORGAN_SLOT_TESTICLES)
+	var/obj/item/organ/genital/anus/anus = user.get_organ_slot(ORGAN_SLOT_ANUS)
 
 	if(!(src == user.vagina))
 		anus?.visibility_preference = GENITAL_HIDDEN_BY_CLOTHES
@@ -405,7 +405,7 @@ GLOBAL_LIST_INIT(dildo_colors, list(//mostly neon colors
 
 /// Code for taking out/putting away the other end of the toy when one end is in you
 /obj/item/clothing/sextoy/dildo/double_dildo/proc/toggle(mob/living/carbon/human/user)
-	play_lewd_sound(user, 'modular_skyrat/modules/modular_items/lewd_items/sounds/latex.ogg', 40, TRUE)
+	conditional_pref_sound(user, 'modular_skyrat/modules/modular_items/lewd_items/sounds/latex.ogg', 40, TRUE)
 
 	if(!end_in_hand)
 		take_in_hand(user)

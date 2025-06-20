@@ -9,6 +9,8 @@
 	var/list/vox_voices = list(VOX_HL, VOX_NORMAL, VOX_BMS)
 	/// The VOX word(s) that were previously inputed.
 	var/vox_word_string
+	/// Can the AI purchase the nuke as a malf
+	var/can_purchase_nuke = FALSE
 
 /mob/living/silicon/ai/verb/announcement_help()
 
@@ -16,7 +18,7 @@
 	set desc = "Display a list of vocal words to announce to the crew."
 	set category = "AI Commands"
 
-	if(incapacitated())
+	if(incapacitated)
 		return
 
 	var/dat = {"
@@ -34,28 +36,28 @@
 			var/index = 0
 			for(var/word in GLOB.vox_sounds)
 				index++
-				dat += "<A href='?src=[REF(src)];say_word=[word]'>[capitalize(word)]</A>"
+				dat += "<A href='byond://?src=[REF(src)];say_word=[word]'>[capitalize(word)]</A>"
 				if(index != GLOB.vox_sounds.len)
 					dat += " / "
 		if(VOX_HL)
 			var/index = 0
 			for(var/word in GLOB.vox_sounds_hl)
 				index++
-				dat += "<A href='?src=[REF(src)];say_word=[word]'>[capitalize(word)]</A>"
+				dat += "<A href='byond://?src=[REF(src)];say_word=[word]'>[capitalize(word)]</A>"
 				if(index != GLOB.vox_sounds_hl.len)
 					dat += " / "
 		if(VOX_MIL)
 			var/index = 0
 			for(var/word in GLOB.vox_sounds_mil)
 				index++
-				dat += "<A href='?src=[REF(src)];say_word=[word]'>[capitalize(word)]</A>"
+				dat += "<A href='byond://?src=[REF(src)];say_word=[word]'>[capitalize(word)]</A>"
 				if(index != GLOB.vox_sounds_mil.len)
 					dat += " / "
 		if(VOX_BMS)
 			var/index = 0
 			for(var/word in GLOB.vox_sounds_bms)
 				index++
-				dat += "<A href='?src=[REF(src)];say_word=[word]'>[capitalize(word)]</A>"
+				dat += "<A href='byond://?src=[REF(src)];say_word=[word]'>[capitalize(word)]</A>"
 				if(index != GLOB.vox_sounds_bms.len)
 					dat += " / "
 
@@ -77,7 +79,7 @@
 
 	last_announcement = message
 
-	if(incapacitated())
+	if(incapacitated)
 		return
 
 	if(control_disabled)
@@ -93,7 +95,7 @@
 	switch(vox_type)
 		if(VOX_NORMAL)
 			for(var/word in words)
-				word = lowertext(trim(word))
+				word = LOWER_TEXT(trim(word))
 				if(!word)
 					words -= word
 					continue
@@ -101,7 +103,7 @@
 					incorrect_words += word
 		if(VOX_HL)
 			for(var/word in words)
-				word = lowertext(trim(word))
+				word = LOWER_TEXT(trim(word))
 				if(!word)
 					words -= word
 					continue
@@ -109,7 +111,7 @@
 					incorrect_words += word
 		if(VOX_MIL)
 			for(var/word in words)
-				word = lowertext(trim(word))
+				word = LOWER_TEXT(trim(word))
 				if(!word)
 					words -= word
 					continue
@@ -117,7 +119,7 @@
 					incorrect_words += word
 		if(VOX_BMS)
 			for(var/word in words)
-				word = lowertext(trim(word))
+				word = LOWER_TEXT(trim(word))
 				if(!word)
 					words -= word
 					continue
@@ -140,7 +142,7 @@
 
 /proc/play_vox_word(word, z_level, mob/only_listener, vox_type)
 
-	word = lowertext(word)
+	word = LOWER_TEXT(word)
 	var/sound_file
 	var/volume = 100
 	switch(vox_type)
@@ -188,7 +190,7 @@
 	set desc = "Switch your VOX announcement voice!"
 	set category = "AI Commands"
 
-	if(incapacitated())
+	if(incapacitated)
 		return
 	var/selection = tgui_input_list(src, "Please select a new VOX voice:", "VOX VOICE", vox_voices)
 	if(selection == null)
@@ -203,7 +205,7 @@
 	set desc = "Display the list of recently pressed vox lines."
 	set category = "AI Commands"
 
-	if(incapacitated())
+	if(incapacitated)
 		return
 
 	to_chat(src, vox_word_string)

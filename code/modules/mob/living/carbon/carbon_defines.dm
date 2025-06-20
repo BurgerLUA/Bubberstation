@@ -2,7 +2,7 @@
 	blood_volume = BLOOD_VOLUME_NORMAL
 	gender = MALE
 	pressure_resistance = 15
-	hud_possible = list(HEALTH_HUD,STATUS_HUD,ANTAG_HUD,GLAND_HUD, DNR_HUD) // SKYRAT EDIT ADDITION - DNR ICON
+	hud_possible = list(HEALTH_HUD,STATUS_HUD,ANTAG_HUD,GLAND_HUD,DNR_HUD,NANITE_HUD,DIAG_NANITE_FULL_HUD) // BUBBER EDIT ADDITION - DNR_HUD / NANITE_HUD
 	has_limbs = TRUE
 	held_items = list(null, null)
 	num_legs = 0 //Populated on init through list/bodyparts
@@ -11,7 +11,9 @@
 	usable_hands = 0 //Populated on init through list/bodyparts
 	mobility_flags = MOBILITY_FLAGS_CARBON_DEFAULT
 	blocks_emissive = EMISSIVE_BLOCK_NONE
-	living_flags = ALWAYS_DEATHGASP
+	mouse_drop_zone = TRUE
+	// STOP_OVERLAY_UPDATE_BODY_PARTS is removed after we call update_body_parts() during init.
+	living_flags = ALWAYS_DEATHGASP|STOP_OVERLAY_UPDATE_BODY_PARTS
 	///List of [/obj/item/organ]s in the mob. They don't go in the contents for some reason I don't want to know.
 	var/list/obj/item/organ/organs = list()
 	///Same as [above][/mob/living/carbon/var/organs], but stores "slot ID" - "organ" pairs for easy access.
@@ -61,8 +63,6 @@
 
 	var/obj/item/food/meat/slab/type_of_meat = /obj/item/food/meat/slab
 
-	var/gib_type = /obj/effect/decal/cleanable/blood/gibs
-
 	rotate_on_lying = TRUE
 
 	/// Gets filled up in [/datum/species/proc/replace_body].
@@ -106,7 +106,7 @@
 	/// Assoc list of BODY_ZONE -> wounding_type. Set when a limb is dismembered, unset when one is attached. Used for determining what scar to add when it comes time to generate them.
 	var/list/body_zone_dismembered_by
 
-	/// Simple modifier for whether this mob can handle greater or lesser skillchip complexity. See /datum/mutation/human/biotechcompat/ for example.
+	/// Simple modifier for whether this mob can handle greater or lesser skillchip complexity. See /datum/mutation/biotechcompat/ for example.
 	var/skillchip_complexity_modifier = 0
 
 	/// Can other carbons be shoved into this one to make it fall?
@@ -125,6 +125,5 @@
 	var/bodyshape = BODYSHAPE_HUMANOID
 
 	COOLDOWN_DECLARE(bleeding_message_cd)
-
 
 	var/next_smell = 0 //SKYRAT EDIT ADDITION /// Cooldown for the next smell

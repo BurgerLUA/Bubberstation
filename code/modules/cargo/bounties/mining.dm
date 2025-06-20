@@ -36,7 +36,7 @@
 
 /datum/bounty/item/mining/skull_helmet
 	name = "Skull Helmet"
-	description = "Station 42's Head of Security has her birthday tomorrow! We want to suprise her with a fashionable skull helmet."
+	description = "Station 42's Head of Security has her birthday tomorrow! We want to surprise her with a fashionable skull helmet."
 	reward = CARGO_CRATE_VALUE * 8
 	wanted_types = list(/obj/item/clothing/head/helmet/skull = TRUE)
 
@@ -46,7 +46,6 @@
 	reward = CARGO_CRATE_VALUE * 15
 	required_count = 3
 	wanted_types = list(/obj/item/clothing/accessory/talisman = TRUE)
-	
 /datum/bounty/item/mining/watcher_wreath
 	name = "Watcher Wreaths"
 	description = "Station 14's Research Director thinks they're onto a break-through on the cultural icons of some pagan beliefs. Ship them a few watcher wreaths for analysis."
@@ -61,7 +60,7 @@
 	reward = CARGO_CRATE_VALUE * 30
 	required_count = 1
 	wanted_types = list(/obj/item/clothing/neck/wreath/icewing = TRUE)
-	
+
 //SKYRAT EDIT REMOVAL
 /*
 /datum/bounty/item/mining/bone_dagger

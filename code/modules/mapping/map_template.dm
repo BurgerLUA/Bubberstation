@@ -61,17 +61,9 @@
 	var/list/area/areas = list()
 
 	var/list/turfs = block(
-		locate(
-			bounds[MAP_MINX],
-			bounds[MAP_MINY],
-			bounds[MAP_MINZ]
-			),
-		locate(
-			bounds[MAP_MAXX],
-			bounds[MAP_MAXY],
-			bounds[MAP_MAXZ]
-			)
-		)
+		bounds[MAP_MINX], bounds[MAP_MINY], bounds[MAP_MINZ],
+		bounds[MAP_MAXX], bounds[MAP_MAXY], bounds[MAP_MAXZ]
+	)
 	for(var/turf/current_turf as anything in turfs)
 		var/area/current_turfs_area = current_turf.loc
 		areas |= current_turfs_area
@@ -114,17 +106,9 @@
 
 	//calculate all turfs inside the border
 	var/list/template_and_bordering_turfs = block(
-		locate(
-			max(bounds[MAP_MINX]-1, 1),
-			max(bounds[MAP_MINY]-1, 1),
-			bounds[MAP_MINZ]
-			),
-		locate(
-			min(bounds[MAP_MAXX]+1, world.maxx),
-			min(bounds[MAP_MAXY]+1, world.maxy),
-			bounds[MAP_MAXZ]
-			)
-		)
+		bounds[MAP_MINX]-1, bounds[MAP_MINY]-1, bounds[MAP_MINZ],
+		bounds[MAP_MAXX]+1, bounds[MAP_MAXY]+1, bounds[MAP_MAXZ]
+	)
 	for(var/turf/affected_turf as anything in template_and_bordering_turfs)
 		affected_turf.air_update_turf(TRUE, TRUE)
 		affected_turf.levelupdate()
@@ -167,7 +151,6 @@
 
 	// Cache for sonic speed
 	var/list/to_rebuild = SSair.adjacent_rebuild
-
 	// iterate over turfs in the border and clear them from active atmos processing
 	for(var/turf/border_turf as anything in CORNER_BLOCK_OFFSET(T, width + 2, height + 2, -1, -1))
 		SSair.remove_from_active(border_turf)
@@ -231,7 +214,7 @@
 		var/turf/corner = locate(placement.x - round(width/2), placement.y - round(height/2), placement.z)
 		if(corner)
 			placement = corner
-	return block(placement, locate(placement.x+width-1, placement.y+height-1, placement.z))
+	return block(placement.x, placement.y, placement.z, placement.x+width-1, placement.y+height-1, placement.z)
 
 /// Takes in a type path, locates an instance of that type in the cached map, and calculates its offset from the origin of the map, returns this offset in the form list(x, y).
 /datum/map_template/proc/discover_offset(obj/marker)
