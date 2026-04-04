@@ -10,23 +10,25 @@
 	icon_state = "peanut"
 
 	density = TRUE
-	resistance_flags = INDESTRUCTIBLE
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	anchored = TRUE
 
+	//Killing
 	var/list/mob/living/current_grudges = list()
 	var/mob/living/current_target = null
 
+	//Processing.
+	var/woke = FALSE
 	var/datum/proximity_monitor/proximity_monitor
 
-	var/woke = FALSE
-
+	//Pathing.
 	var/list/current_path
+	var/path_step = 0
 
-	var/new_proximity = FALSE
+	//Anti-cheesing
+	var/anger_level = 0
 
 	COOLDOWN_DECLARE(pathing_cooldown)
-
-	var/path_step = 0
 
 /obj/structure/peanut/Destroy()
 	STOP_PROCESSING(SSfastprocess, src)
@@ -39,6 +41,8 @@
 /obj/structure/peanut/Initialize(mapload)
 	. = ..()
 	proximity_monitor = new(src, PEANUT_MAX_SEARCH_DISTANCE)
+	AddComponent(/datum/component/stationloving, FALSE, FALSE)
+	SSpoints_of_interest.make_point_of_interest(src)
 
 /obj/structure/peanut/proc/wake_up()
 
@@ -60,10 +64,6 @@
 
 	return TRUE
 
-
-/obj/structure/peanut/proc/is_valid_target(mob/living/possible_target)
-	return
-
 /obj/structure/peanut/HasProximity(mob/living/proximity_check as mob) //When something enters our proximity for the first time.
 
 	. = ..()
@@ -84,7 +84,7 @@
 	var/is_being_watched = FALSE
 
 	var/turf/our_turf = get_turf(src)
-	
+
 	var/list/mob/living/found_viewers //This is set when we need it.
 
 	for(var/mob/living/possible_victim as anything in current_grudges)
@@ -111,8 +111,8 @@
 		//We don't need to keep checking for the code inside this if we know we're being watched.
 		if(!is_being_watched)
 
-			//Check if we're close enough, if we're conscious, we're facing a target, and we're not blind 
-			if(victim_distance <= PEANUT_MAX_SEARCH_DISTANCE && (possible_victim.stat <= SOFT_CRIT) && is_source_facing_target(possible_victim,src) && !possible_victim.is_blind())		
+			//Check if we're close enough, if we're conscious, we're facing a target, and we're not blind
+			if(victim_distance <= PEANUT_MAX_SEARCH_DISTANCE && (possible_victim.stat <= SOFT_CRIT) && is_source_facing_target(possible_victim,src) && !possible_victim.is_blind())
 				if(!found_viewers)
 					found_viewers = viewers(DEFAULT_SIGHT_DISTANCE,src)
 				//Are we actually able to see the target?
@@ -129,8 +129,21 @@
 
 	//If we're being watched, clear our current path.
 	if(is_being_watched)
+		anger_level += SSfastprocess.wait
+		if(anger_level >= (30 SECONDS) )
+			anger_level = 0
+			var/area/our_area = get_area(src)
+			our_area?.apc?.overload_lighting()
+			for(var/mob/living/victim in viewers(PEANUT_MAX_SEARCH_DISTANCE,src))
+				victim.set_temp_blindness_if_lower( (5 SECONDS) )
+				to_chat(victim, span_warning("Something blinds your vision!"))
+
 		current_path = null
 		return
+
+	//Everything below runs if we're not being watched.
+
+	anger_level = 0
 
 	//We have a target.
 	if(closest_killable_target)
